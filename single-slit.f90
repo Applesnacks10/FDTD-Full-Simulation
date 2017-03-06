@@ -705,8 +705,9 @@ if((myrank>=0).and.(myrank<(nprocs-1)))then
  enddo
 
 
- do j=1,N_loc
+
  !  PML Left, Ey
+ do j=1,N_loc
   do i=2,npml
    psi_Eyx_1(i,j)=be_x(i)*psi_Eyx_1(i,j)+ce_x(i)*(Hz(i-1,j)-Hz(i,j))/dx !Occurs first regardless of material
    
@@ -716,10 +717,11 @@ if((myrank>=0).and.(myrank<(nprocs-1)))then
    else
     Ey(i,j)=Ey(i,j)+dt_eps0*psi_Eyx_1(i,j)
    endif
-    
   enddo
+ enddo
  
  !  PML Right, Ey
+ do j = 1,N_loc
   ii=npml
   do i=(Nx-1)-(npml-2),Nx-1
    psi_Eyx_1(i,j)=be_x(i)*psi_Eyx_1(i,j)+ce_x(i)*(Hz(i-1,j)-Hz(i,j))/dx !Occurs first regardless of material
@@ -730,9 +732,10 @@ if((myrank>=0).and.(myrank<(nprocs-1)))then
    else
     Ey(i,j)=Ey(i,j)+dt_eps0*psi_Eyx_1(i,j)
    endif
- 
+  
+  ii = ii-1 
   enddo
- enddo ! N_loc
+ enddo
 
 endif
 
