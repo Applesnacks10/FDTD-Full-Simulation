@@ -593,6 +593,14 @@ endif
 !------------------------------
 
 if((myrank>0).and.(myrank<(nprocs-1)))then
+
+ if(myrank == ms)then
+  j = js
+  do i = iw1, iw2
+   Ex(i,j) = Ex(i,j) + pulse(n)
+  enddo
+ endif
+ 
  do i=1,Nx-1
   j=1
    if(FBx(i,j))then
@@ -615,17 +623,19 @@ if((myrank>0).and.(myrank<(nprocs-1)))then
  enddo
 
 !~~~ incident ~~~!
+
+ if(myrank == ms)then
+  j = js
+  Ex_inc(j) = Ex_inc(j) + pulse(n)
+ endif
+ 
  j=1
-  Ex_inc(j)=Ex_inc(j)+dt_eps0*(Hz_inc(j)-Hz_get_inc)*den_ey(j)
-   
+ Ex_inc(j)=Ex_inc(j)+dt_eps0*(Hz_inc(j)-Hz_get_inc)*den_ey(j)
+  
  do j=2,N_loc
-  if((myrank==ms).and.(j==js))then !laser pulse
-    Ex_inc(j)=Ex_inc(j)+dt_eps0*(Hz_inc(j)-Hz_inc(j-1))/dy+ &
- 	                    pulse(n)
-   else
-	Ex_inc(j)=Ex_inc(j)+dt_eps0*(Hz_inc(j)-Hz_inc(j-1))*den_ey(j)
-  endif
+  Ex_inc(j)=Ex_inc(j)+dt_eps0*(Hz_inc(j)-Hz_inc(j-1))/dy
  enddo
+ 
 endif
  
 !--------------------------------
