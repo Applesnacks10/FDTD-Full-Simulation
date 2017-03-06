@@ -20,14 +20,10 @@ double precision, parameter :: y0=-640.0D-9,yM=640.0D-9
 
 integer, parameter :: Nx=301
 double precision, parameter :: x0=-150.0e-9,xM=150.0e-9
-!
-!~~~ scattered field zone ~~~!
-!
-integer, parameter :: i0=26,i1=276  !<--- +/- 125nm
-integer, parameter :: mj0=1,j0=11   !<--- - 590nm
-integer, parameter :: mj1=28,j1=21  !<--- + 500nm
 
-integer, parameter :: ms=29,js=21
+!
+!~~~ Source ~~~!
+!
 
 double precision, parameter :: tau=0.36d-15,E0=1.0,omega=ev_to_radsec*3.0
 double precision aBH(4)
@@ -38,7 +34,8 @@ double precision tmp1,tmp2,omega_P(N_w),SN(N_w,2)
 !
 double precision tmp
 
-integer, parameter :: iw1=i0,iw2=i1
+integer, parameter :: iw1 = npml, iw2 = Nx-1 - (npml-1) !Spans the interior
+!integer, parameter :: iw1 = npml+1, iw2 = Nx-1 - (npml) !Spans the interior
 integer, parameter :: mwR=30,jwR=31  !<--- + 590nm
 integer, parameter :: mwT=1,jwT=21   !<--- - 580nm
 
@@ -95,7 +92,6 @@ logical FBx(Nx-1,N_loc),FBy(Nx,N_loc)
 
 double precision, parameter :: R=83.2525D-9
 double precision, parameter :: z1=-75.2525D-9,z2=75.2525d-9
-double precision, parameter :: slit_length=200.2525d-9 !should be < 2*x(i1)
 
 !
 !~~~ EM field components ~~~!
@@ -184,8 +180,8 @@ FBy=.false.
 do i=1,Nx-1
  do j=1,N_loc
   if( &
-    ((y(j)>z1).and.(y(j)<z2).and.(xM2(i)<(-R)).and.(xM2(i)>(-slit_length/2.0))).or. &
-    ((y(j)>z1).and.(y(j)<z2).and.(xM2(i)>R).and.(xM2(i)<(slit_length/2.0))) &
+    ((y(j)>z1).and.(y(j)<z2).and.(xM2(i)<(-R))).or. &
+    ((y(j)>z1).and.(y(j)<z2).and.(xM2(i)>R   )) &
      )then
     FBx(i,j)=.true.
    else
@@ -197,8 +193,8 @@ enddo
 do i=1,Nx
  do j=1,N_loc
   if( &
-    ((yM2(j)>z1).and.(yM2(j)<z2).and.(x(i)<(-R)).and.(x(i)>(-slit_length/2.0))).or. &
-    ((yM2(j)>z1).and.(yM2(j)<z2).and.(x(i)>R).and.(x(i)<(slit_length/2.0))) &
+    ((yM2(j)>z1).and.(yM2(j)<z2).and.(x(i)<(-R))).or. &
+    ((yM2(j)>z1).and.(yM2(j)<z2).and.(x(i)>R   )) &
      )then
     FBy(i,j)=.true.
    else
@@ -390,6 +386,10 @@ do n=1,Nt
   endif!send_recv
  enddo!nprocs
 
+!-------------------------
+!----------- 0 ----------- 
+!-------------------------
+
 if(myrank==0)then !rank=0, here PML in y-direction is only applied to the bottom part
  do i=1,Nx-1
   do j=1,N_loc-1
@@ -440,6 +440,10 @@ if(myrank==0)then !rank=0, here PML in y-direction is only applied to the bottom
  enddo
 endif
 
+!------------------------------
+!----------- middle ----------- 
+!------------------------------
+
 if((myrank>0).and.(myrank<(nprocs-1)))then !no PML for y-direction here
  do i=1,Nx-1
   do j=1,N_loc-1
@@ -475,19 +479,11 @@ if((myrank>0).and.(myrank<(nprocs-1)))then !no PML for y-direction here
  j=N_loc
   Hz_inc(j)=Hz_inc(j)+dt_mu0*(Ex_get_inc-Ex_inc(j))*den_hy(j)
 
-! scattered/total field updates
- if(myrank==mj0)then
-  do i=i0,i1-1
-   Hz(i,j0-1)=Hz(i,j0-1)-dt_mu0*Ex_inc(j0)/dy
-  enddo
- endif
- 
- if(myrank==mj1)then
-  do i=i0,i1-1
-   Hz(i,j1)=Hz(i,j1)+dt_mu0*Ex_inc(j1)/dy
-  enddo
- endif
 endif
+  
+!--------------------------------
+!----------- nprocs-1 ----------- 
+!--------------------------------
 
 if(myrank==(nprocs-1))then !rank=(nprocs-1), here PML in y-direction is only applied to the top part
  do i=1,Nx-1
@@ -557,6 +553,10 @@ endif
   endif!send_recv
  enddo!nprocs
  
+!-------------------------
+!----------- 0 ----------- 
+!-------------------------
+ 
 if(myrank==0)then !rank=0, here PML in y-direction is only applied to the bottom part
  do i=1,Nx-1
   do j=2,N_loc
@@ -583,6 +583,10 @@ if(myrank==0)then !rank=0, here PML in y-direction is only applied to the bottom
   Ex_inc(j)=Ex_inc(j)+dt_eps0*psi_Exy_1_inc(j)
  enddo
 endif
+
+!------------------------------
+!----------- middle ----------- 
+!------------------------------
 
 if((myrank>0).and.(myrank<(nprocs-1)))then !no PML for y-direction here
  do i=1,Nx-1
@@ -618,22 +622,13 @@ if((myrank>0).and.(myrank<(nprocs-1)))then !no PML for y-direction here
 	Ex_inc(j)=Ex_inc(j)+dt_eps0*(Hz_inc(j)-Hz_inc(j-1))*den_ey(j)
   endif
  enddo
-
-! scattered/total field updates
- if(myrank==mj0)then
-  do i=i0,i1-1
-   Ex(i,j0)=Ex(i,j0)-dt_eps0*Hz_inc(j0-1)/dy
-  enddo
- endif
-
- if(myrank==mj1)then
-  do i=i0,i1-1
-   Ex(i,j1)=Ex(i,j1)+dt_eps0*Hz_inc(j1)/dy
-  enddo
- endif
 endif
+ 
+!--------------------------------
+!----------- nprocs-1 ----------- 
+!--------------------------------
 
-if(myrank==(nprocs-1))then !rank=(nprocs-1), here PML in y-direction is only applied to the top part
+if(myrank==(nprocs-1))then
  j=1
   do i=1,Nx-1
    Ex(i,j)=Ex(i,j)+dt_eps0*(Hz(i,j)-Hz_get(i))*den_ey(j)
@@ -645,7 +640,7 @@ if(myrank==(nprocs-1))then !rank=(nprocs-1), here PML in y-direction is only app
   enddo
  enddo
 
-!  PML for top Ex [top only here! since myrank=(nrpocs-1)], y-direction
+! PML Top
  do i=1,Nx-1
   jj=npml
   do j=N_loc+1-npml,N_loc-1
@@ -677,6 +672,11 @@ endif
 !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Ey ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!
 !:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::!
 !:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::!
+
+!------------------------------------
+!----------- 0 and middle ----------- 
+!------------------------------------
+
 if((myrank>=0).and.(myrank<(nprocs-1)))then
  do i=2,Nx-1
   do j=1,N_loc
@@ -704,29 +704,11 @@ if((myrank>=0).and.(myrank<(nprocs-1)))then
   ii=ii-1
   enddo
  enddo
-
-! scattered/total field updates
- if(myrank==mj0)then
-  do j=j0,N_loc
-   Ey(i0,j)=Ey(i0,j)+dt_eps0*Hz_inc(j)/dy
-   Ey(i1,j)=Ey(i1,j)-dt_eps0*Hz_inc(j)/dy
-  enddo
- endif
-
- if((myrank>mj0).and.(myrank<mj1))then
-  do j=1,N_loc
-   Ey(i0,j)=Ey(i0,j)+dt_eps0*Hz_inc(j)/dy
-   Ey(i1,j)=Ey(i1,j)-dt_eps0*Hz_inc(j)/dy
-  enddo
- endif
-
- if(myrank==mj1)then
-  do j=1,j1-1
-   Ey(i0,j)=Ey(i0,j)+dt_eps0*Hz_inc(j)/dy
-   Ey(i1,j)=Ey(i1,j)-dt_eps0*Hz_inc(j)/dy
-  enddo
- endif
 endif
+
+!--------------------------------
+!----------- nprocs-1 ----------- 
+!--------------------------------
 
 if(myrank==(nprocs-1))then
  do i=2,Nx-1
