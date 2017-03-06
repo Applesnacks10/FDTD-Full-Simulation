@@ -29,6 +29,7 @@ double precision, parameter :: tau=0.36d-15,E0=1.0,omega=ev_to_radsec*3.0
 double precision aBH(4)
 double precision pulse(Nt)
 double precision tmp1,tmp2,omega_P(N_w),SN(N_w,2)
+integer, parameter :: ms = 29, js = 21
 
 !
 !~~~ physical grid ~~~!
@@ -693,36 +694,36 @@ if((myrank>=0).and.(myrank<(nprocs-1)))then
   enddo
  enddo
 
+
  do j=1,N_loc
-!  PML Left, Ey
+ !  PML Left, Ey
   do i=2,npml
-   do j = 1,N_loc
-    psi_Eyx_1(i,j)=be_x(i)*psi_Eyx_1(i,j)+ce_x(i)*(Hz(i-1,j)-Hz(i,j))/dx !Occurs first regardless of material
+   psi_Eyx_1(i,j)=be_x(i)*psi_Eyx_1(i,j)+ce_x(i)*(Hz(i-1,j)-Hz(i,j))/dx !Occurs first regardless of material
    
-    if(FBy(i,j))then
-     Ey(i,j)=Ey(i,j)+Cb*psi_Eyx_1(i,j)
-     PDy(i,j)=PDy(i,j)+A2*(Cb*psi_Eyx_1(i,j))
-    else
-     Ey(i,j)=Ey(i,j)+dt_eps0*psi_Eyx_1(i,j)
-    endif
+   if(FBy(i,j))then
+    Ey(i,j)=Ey(i,j)+Cb*psi_Eyx_1(i,j)
+    PDy(i,j)=PDy(i,j)+A2*(Cb*psi_Eyx_1(i,j))
+   else
+    Ey(i,j)=Ey(i,j)+dt_eps0*psi_Eyx_1(i,j)
+   endif
     
   enddo
-!  PML Right, Ey
- ii=npml
- do i=(Nx-1)-(npml-2),Nx-1
-  do j = 1,N_loc
-    psi_Eyx_1(i,j)=be_x(i)*psi_Eyx_1(i,j)+ce_x(i)*(Hz(i-1,j)-Hz(i,j))/dx !Occurs first regardless of material
+ 
+ !  PML Right, Ey
+  ii=npml
+  do i=(Nx-1)-(npml-2),Nx-1
+   psi_Eyx_1(i,j)=be_x(i)*psi_Eyx_1(i,j)+ce_x(i)*(Hz(i-1,j)-Hz(i,j))/dx !Occurs first regardless of material
    
-    if(FBy(i,j))then
-     Ey(i,j)=Ey(i,j)+Cb*psi_Eyx_1(i,j)
-     PDy(i,j)=PDy(i,j)+A2*(Cb*psi_Eyx_1(i,j))
-    else
-     Ey(i,j)=Ey(i,j)+dt_eps0*psi_Eyx_1(i,j)
-    endif
-   
-  ii=ii-1
+   if(FBy(i,j))then
+    Ey(i,j)=Ey(i,j)+Cb*psi_Eyx_1(i,j)
+    PDy(i,j)=PDy(i,j)+A2*(Cb*psi_Eyx_1(i,j))
+   else
+    Ey(i,j)=Ey(i,j)+dt_eps0*psi_Eyx_1(i,j)
+   endif
+ 
   enddo
- enddo
+ enddo ! N_loc
+
 endif
 
 !--------------------------------
