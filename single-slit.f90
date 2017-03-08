@@ -214,7 +214,7 @@ enddo
 !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!
 sigmaCPML=0.8*(m+1)/(dx*(mu0/eps0*eps_delectric)**0.5)
 alphaCPML=0.05
-kappaCPML=5.0
+kappaCPML=0.0
 !~~~ set CPML vectors ~~~!
 do i=1,npml
  sige_x(i)=sigmaCPML*((npml-i)/(npml-1.0))**m
