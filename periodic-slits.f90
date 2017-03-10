@@ -35,7 +35,7 @@ double precision tmp1,tmp2,omega_P(N_w),SN(N_w,2)
 !
 double precision tmp
 
-integer, parameter :: iw1= 1 + 19, iw2= Nx - 19
+integer, parameter :: iw1= 1 + 29, iw2= Nx - 29
 !integer, parameter :: iw1 = npml+1, iw2 = (Nx) - (npml)
 integer, parameter :: mwR=29,jwR=11
 integer, parameter :: mwT=1,jwT=11
@@ -61,7 +61,7 @@ double precision, parameter :: dt=dy/(2.0*c)
 !
 !~~~ CPML ~~~!
 !
-integer, parameter :: npml=19,m=3,ma=1 
+integer, parameter :: npml=20,m=3,ma=1 
 double precision sigmaCPML,alphaCPML,kappaCPML
 double precision psi_Hzy_1(Nx-1,npml-1),psi_Exy_1(Nx-1,npml)                              
 double precision psi_Hzy_2(Nx-1,npml-1),psi_Exy_2(Nx-1,npml)
