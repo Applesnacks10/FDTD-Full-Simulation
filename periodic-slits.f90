@@ -662,6 +662,11 @@ endif
 !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Ey ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!
 !:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::!
 !:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::!
+
+!----------------------------------------
+!-----------0 through nprocs-2-----------
+!----------------------------------------
+
 if((myrank>=0).and.(myrank<(nprocs-1)))then
 
 !Left Periodicity
@@ -765,22 +770,69 @@ enddo
  
 endif
 
+!---------------------------------------
+!---------------nprocs-1----------------
+!---------------------------------------
+
 if(myrank==(nprocs-1))then
+
+!Left Periodicity
+
  i=1
-  do j=1,N_loc-1
-   Ey(i,j)=Ey(i,j)+dt_eps0*((Hz(Nx-1,j)-Hz(i,j))*den_ex(i))
-  enddo
- 
+ do j=1,N_loc-1
+  Ey(i,j)=Ey(i,j)+dt_eps0*(Hz(Nx-1,j)-Hz(i,j))*den_ex(i)
+ enddo
+
+!Left Periodicity PML, Ey
+
+ do j = 1,N_loc-1
+  psi_Eyx_1(i,j)=be_x(i)*psi_Eyx_1(i,j)+ce_x(i)*(Hz(Nx-1,j)-Hz(i,j))/dx
+  Ey(i,j)=Ey(i,j)+dt_eps0*psi_Eyx_1(i,j)
+ enddo
+
+!Interior Update
+
  do i=2,Nx-1
   do j=1,N_loc-1
-   Ey(i,j)=Ey(i,j)+dt_eps0*((Hz(i-1,j)-Hz(i,j))*den_ex(i))
+   Ey(i,j)=Ey(i,j)+dt_eps0*(Hz(i-1,j)-Hz(i,j))*den_ex(i)
+  enddo
+ enddo
+ 
+ !Left PML, Ey
+ 
+ do j = 1,N_loc-1
+  do i = 2,npml
+   psi_Eyx_1(i,j)=be_x(i)*psi_Eyx_1(i,j)+ce_x(i)*(Hz(i-1,j)-Hz(i,j))/dx
+   Ey(i,j)=Ey(i,j)+dt_eps0*psi_Eyx_1(i,j)
+  enddo
+ enddo
+ 
+!Right PML, Ey
+
+ do j = 1,N_loc-1
+  ii = npml
+  do i = (Nx-1)-(npml-2), Nx-1
+   psi_Eyx_2(i,j)=be_x(ii)*psi_Eyx_2(i,j)+ce_x(ii)*(Hz(i-1,j)-Hz(i,j))/dx
+   Ey(i,j)=Ey(i,j)+dt_eps0*psi_Eyx_2(i,j)
+   ii = ii - 1
   enddo
  enddo
 
+!Right Peridoicity
+
  i=Nx
   do j=1,N_loc-1
-   Ey(i,j)=Ey(i,j)+dt_eps0*((Hz(i-1,j)-Hz(1,j))*den_ex(i))
+   Ey(i,j)=Ey(i,j)+dt_eps0*(Hz(i-1,j)-Hz(1,j))*den_ex(i)
   enddo
+  
+!Right Periodicity PML, Ey
+
+ ii = 1
+ do j = 1,N_loc-1
+  psi_Eyx_2(i,j)=be_x(ii)*psi_Eyx_2(i,j)+ce_x(ii)*(Hz(i-1,j)-Hz(1,j))/dx
+  Ey(i,j)=Ey(i,j)+dt_eps0*psi_Eyx_2(i,j)
+ enddo
+ 
 endif
 
 
