@@ -35,7 +35,8 @@ double precision tmp1,tmp2,omega_P(N_w),SN(N_w,2)
 !
 double precision tmp
 
-integer, parameter :: iw1=3,iw2=Nx-2
+integer, parameter :: iw1= 1 + 19, iw2= Nx - 19
+!integer, parameter :: iw1 = npml+1, iw2 = (Nx) - (npml)
 integer, parameter :: mwR=29,jwR=11
 integer, parameter :: mwT=1,jwT=11
 
