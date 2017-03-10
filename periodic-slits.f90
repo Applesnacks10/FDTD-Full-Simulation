@@ -60,14 +60,18 @@ double precision, parameter :: dt=dy/(2.0*c)
 !
 !~~~ CPML ~~~!
 !
-integer, parameter :: npml=19,m=3,ma=1
+integer, parameter :: npml=19,m=3,ma=1 
 double precision sigmaCPML,alphaCPML,kappaCPML
-double precision psi_Hzy_1(Nx-1,npml-1),psi_Exy_1(Nx-1,npml),psi_Eyx_1(npml,N_loc)
-double precision psi_Hzy_2(Nx-1,npml-1),psi_Exy_2(Nx-1,npml),psi_Eyx_2(npml,N_loc)
+double precision psi_Hzy_1(Nx-1,npml-1),psi_Exy_1(Nx-1,npml)                              
+double precision psi_Hzy_2(Nx-1,npml-1),psi_Exy_2(Nx-1,npml)
 double precision be_y(npml),ce_y(npml),alphae_y(npml),sige_y(npml),kappae_y(npml)
 double precision bh_y(npml-1),ch_y(npml-1),alphah_y(npml-1),sigh_y(npml-1),kappah_y(npml-1)
-double precision be_x(npml),ce_x(npml),alphae_x(npml),sige_x(npml),kappae_x(npml)
 double precision den_ex(Nx),den_hx(Nx),den_ey(N_loc),den_hy(N_loc)
+
+double precision psi_Hzx_1(npml-1,N_loc),psi_Eyx_1(npml,N_loc)
+double precision psi_Hzx_2(npml-1,N_loc),psi_Eyx_2(npml,N_loc)
+double precision be_x(npml),ce_x(npml),alphae_x(npml),sige_x(npml),kappae_x(npml)
+double precision bh_x(npml-1),ch_x(npml-1),alphah_x(npml-1),sigh_x(npml-1),kappah_x(npml-1)
 
 double precision psi_Hzy_1_inc(npml-1),psi_Exy_1_inc(npml)                              
 double precision psi_Hzy_2_inc(npml-1),psi_Exy_2_inc(npml)
@@ -206,6 +210,30 @@ sigmaCPML=0.8*(m+1)/(dx*(mu0/eps0*eps_delectric)**0.5)
 alphaCPML=0.05
 kappaCPML=5.0
 !~~~ set CPML vectors ~~~!
+do i=1,npml
+ sige_x(i)=sigmaCPML*((npml-i)/(npml-1.0))**m
+ alphae_x(i)=alphaCPML*((i-1.0)/(npml-1.0))**ma
+ kappae_x(i)=1.0+(kappaCPML-1.0)*((npml-i)/(npml-1.0))**m
+ be_x(i)=exp(-(sige_x(i)/kappae_x(i)+alphae_x(i))*dt/eps0)
+ if( &
+    (sige_x(i)==0.0).and. &
+    (alphae_x(i)==0.0).and. & 
+    (i==npml) &
+   )then
+   ce_x(i)=0.0
+  else
+   ce_x(i)=sige_x(i)*(be_x(i)-1.0)/(sige_x(i)+kappae_x(i)*alphae_x(i))/ kappae_x(i)
+ endif
+enddo
+
+do i=1,npml-1
+ sigh_x(i)=sigmaCPML*((npml-i-0.5)/(npml-1.0))**m
+ alphah_x(i)=alphaCPML*((i-0.5)/(npml-1.0))**ma
+ kappah_x(i)=1.0+(kappaCPML-1.0)*((npml-i-0.5)/(npml-1.0))**m
+ bh_x(i)=exp(-(sigh_x(i)/kappah_x(i)+alphah_x(i))*dt/eps0)
+ ch_x(i)=sigh_x(i)*(bh_x(i)-1.0)/(sigh_x(i)+kappah_x(i)*alphah_x(i))/kappah_x(i)
+enddo
+
 do j=1,npml
  sige_y(j)=sigmaCPML*((npml-j)/(npml-1.0))**m
  alphae_y(j)=alphaCPML*((j-1)/(npml-1.0))**ma
@@ -221,7 +249,7 @@ do j=1,npml
    ce_y(j)=sige_y(j)*(be_y(j)-1.0)/(sige_y(j)+kappae_y(j)*alphae_y(j))/kappae_y(j)
  endif
 enddo
-
+   
 do j=1,npml-1
  sigh_y(j)=sigmaCPML*((npml-j-0.5)/(npml-1.0))**m
  alphah_y(j)=alphaCPML*((j-0.5)/(npml-1.0))**ma
@@ -229,22 +257,6 @@ do j=1,npml-1
  bh_y(j)=exp(-(sigh_y(j)/kappah_y(j)+alphah_y(j))*dt/eps0)
  ch_y(j)=sigh_y(j)*(bh_y(j)-1.0)/(sigh_y(j)+kappah_y(j)*alphah_y(j))/kappah_y(j)
 enddo
-
-do i = 1,npml
- sige_x(i)=sigmaCPML*((npml-i)/(npml-1.0))**m
- alphae_x(i)=alphaCPML*((i-1)/(npml-1.0))**ma
- kappae_x(i)=1.0+(kappaCPML-1.0)*((npml-i)/(npml-1.0))**m
- be_x(i)=exp(-(sige_x(i)/kappae_x(i)+alphae_x(i))*dt/eps0)
- if( &
-    (sige_x(i)==0.0).and.&
-    (alphae_x(i)==0.0).and. &
-    (i==npml) &
-   )then
-   ce_x(i)=0.0
-  else
-   ce_x(i)=sige_x(i)*(be_x(i)-1.0)/(sige_x(i)+kappae_x(i)*alphae_x(i))/kappae_x(i)
- endif
-enddo 
 
 den_hy=1.0/dy
 if(myrank==0)then
@@ -280,8 +292,29 @@ if(myrank==0)then
   enddo
 endif
 
-den_hx=1.0/dx
-den_ex=1.0/dx
+ii=npml-1
+do i=1,Nx-1
+ if(i<=(npml-1))then
+   den_hx(i)=1.0/(kappah_x(i)*dx)
+  elseif(i>=(Nx+1-npml))then
+   den_hx(i)=1.0/(kappah_x(ii)*dx)
+   ii=ii-1
+  else
+   den_hx(i)=1.0/dx
+ endif
+enddo
+
+ii=npml
+do i=1,Nx-1
+ if(i<=npml)then
+   den_ex(i)=1.0/(kappae_x(i)*dx)
+  elseif (i>=(Nx+1-npml))then
+   den_ex(i)=1.0/(kappae_x(ii)*dx)
+   ii=ii-1
+  else
+   den_ex(i)=1.0/dx
+ endif
+enddo
 
 !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!
          !~~~ end of CPML ~~~!
@@ -298,6 +331,10 @@ psi_Hzy_1=0.0
 psi_Exy_1=0.0
 psi_Hzy_2=0.0
 psi_Exy_2=0.0
+psi_Hzx_1=0.0
+psi_Eyx_1=0.0
+psi_Hzx_2=0.0
+psi_Eyx_2=0.0
 
 Ex_get=0.0
 Ex_send=0.0
@@ -360,7 +397,22 @@ if(myrank==0)then !rank=0, here PML in y-direction is only applied to the bottom
    Hz(i,j)=Hz(i,j)+dt_mu0*((Ey(i,j)-Ey(i+1,j))*den_hx(i)+ &
 			               (Ex_get(i)-Ex(i,j))*den_hy(j))
  enddo
-
+ 
+ do j=1,N_loc
+!  PML for left Hz, x-direction
+  do i=1,npml-1
+   psi_Hzx_1(i,j)=bh_x(i)*psi_Hzx_1(i,j)+ch_x(i)*(Ey(i,j)-Ey(i+1,j))/dx
+   Hz(i,j)=Hz(i,j)+dt_mu0*psi_Hzx_1(i,j)
+  enddo
+!  PML for right Hz, x-direction
+  ii=npml-1
+  do i=Nx+1-npml,Nx-1
+   psi_Hzx_2(ii,j)=bh_x(ii)*psi_Hzx_2(ii,j)+ch_x(ii)*(Ey(i,j)-Ey(i+1,j))/dx
+   Hz(i,j)=Hz(i,j)+dt_mu0*psi_Hzx_2(ii,j)
+   ii=ii-1
+  enddo
+ enddo
+ 
  do i=1,Nx-1
  !  PML for bottom Hz [bottom only here! since myrank=0], y-direction
   do j=1,npml-1
@@ -396,6 +448,21 @@ if((myrank>0).and.(myrank<(nprocs-1)))then !no PML for y-direction here
 			               (Ex_get(i)-Ex(i,j))*den_hy(j))
  enddo
 
+ do j=1,N_loc
+!  PML for left Hz, x-direction
+  do i=1,npml-1
+   psi_Hzx_1(i,j)=bh_x(i)*psi_Hzx_1(i,j)+ch_x(i)*(Ey(i,j)-Ey(i+1,j))/dx
+   Hz(i,j)=Hz(i,j)+dt_mu0*psi_Hzx_1(i,j)
+  enddo
+!  PML for right Hz, x-direction
+  ii=npml-1
+  do i=Nx+1-npml,Nx-1
+   psi_Hzx_2(ii,j)=bh_x(ii)*psi_Hzx_2(ii,j)+ch_x(ii)*(Ey(i,j)-Ey(i+1,j))/dx
+   Hz(i,j)=Hz(i,j)+dt_mu0*psi_Hzx_2(ii,j)
+   ii=ii-1
+  enddo
+ enddo
+
 !~~~~ incident ~~~~!
  do j=1,N_loc-1
   Hz_inc(j)=Hz_inc(j)+dt_mu0*(Ex_inc(j+1)-Ex_inc(j))*den_hy(j)
@@ -417,6 +484,21 @@ if(myrank==(nprocs-1))then !rank=(nprocs-1), here PML in y-direction is only app
   do j=1,N_loc-1
    Hz(i,j)=Hz(i,j)+dt_mu0*((Ey(i,j)-Ey(i+1,j))*den_hx(i)+ &
 			               (Ex(i,j+1)-Ex(i,j))*den_hy(j))
+  enddo
+ enddo
+ 
+ do j=1,N_loc
+!  PML for left Hz, x-direction
+  do i=1,npml-1
+   psi_Hzx_1(i,j)=bh_x(i)*psi_Hzx_1(i,j)+ch_x(i)*(Ey(i,j)-Ey(i+1,j))/dx
+   Hz(i,j)=Hz(i,j)+dt_mu0*psi_Hzx_1(i,j)
+  enddo
+!  PML for right Hz, x-direction
+  ii=npml-1
+  do i=Nx+1-npml,Nx-1
+   psi_Hzx_2(ii,j)=bh_x(ii)*psi_Hzx_2(ii,j)+ch_x(ii)*(Ey(i,j)-Ey(i+1,j))/dx
+   Hz(i,j)=Hz(i,j)+dt_mu0*psi_Hzx_2(ii,j)
+   ii=ii-1
   enddo
  enddo
 
