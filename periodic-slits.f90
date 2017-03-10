@@ -61,7 +61,7 @@ double precision, parameter :: dt=dy/(2.0*c)
 !
 !~~~ CPML ~~~!
 !
-integer, parameter :: npml=20,m=3,ma=1 
+integer, parameter :: npml=19,m=3,ma=1 
 double precision sigmaCPML,alphaCPML,kappaCPML
 double precision psi_Hzy_1(Nx-1,npml-1),psi_Exy_1(Nx-1,npml)                              
 double precision psi_Hzy_2(Nx-1,npml-1),psi_Exy_2(Nx-1,npml)
@@ -677,6 +677,19 @@ if((myrank>=0).and.(myrank<(nprocs-1)))then
    endif
 enddo
 
+!Left Periodicity PML, Ey
+
+ do j = 1,N_loc
+  if(FBy(i,j))then
+   psi_Eyx_1(i,j)=be_x(i)*psi_Eyx_1(i,j)+ce_x(i)*(Hz(Nx-1,j)-Hz(i,j))/dx
+   PDy(i,j) = PDy(i,j) + A2*(C3*psi_Eyx_1(i,j))
+   Ey(i,j) = Ey(i,j) + C3*psi_Eyx_1(i,j)
+  else
+   psi_Eyx_1(i,j)=be_x(i)*psi_Eyx_1(i,j)+ce_x(i)*(Hz(Nx-1,j)-Hz(i,j))/dx
+   Ey(i,j)=Ey(i,j)+dt_eps0*psi_Eyx_1(i,j)
+  endif
+ enddo
+
 !Interior Update
 
  do i=2,Nx-1
@@ -735,6 +748,21 @@ enddo
 	 Ey(i,j)=Ey(i,j)+dt_eps0*(Hz(i-1,j)-Hz(1,j))*den_ex(i)
    endif
   enddo
+  
+!Right Periodicity PML, Ey
+
+ ii = 1
+ do j = 1,N_loc
+  if(FBy(i,j))then
+   psi_Eyx_2(i,j)=be_x(ii)*psi_Eyx_2(i,j)+ce_x(ii)*(Hz(i-1,j)-Hz(1,j))/dx
+   PDy(i,j) = PDy(i,j) + A2*(C3*psi_Eyx_2(i,j))
+   Ey(i,j) = Ey(i,j) + C3*psi_Eyx_2(i,j)
+  else
+   psi_Eyx_2(i,j)=be_x(ii)*psi_Eyx_2(i,j)+ce_x(ii)*(Hz(i-1,j)-Hz(1,j))/dx
+   Ey(i,j)=Ey(i,j)+dt_eps0*psi_Eyx_2(i,j)
+  endif
+ enddo
+ 
 endif
 
 if(myrank==(nprocs-1))then
