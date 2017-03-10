@@ -62,10 +62,11 @@ double precision, parameter :: dt=dy/(2.0*c)
 !
 integer, parameter :: npml=19,m=3,ma=1
 double precision sigmaCPML,alphaCPML,kappaCPML
-double precision psi_Hzy_1(Nx-1,npml-1),psi_Exy_1(Nx-1,npml)                              
-double precision psi_Hzy_2(Nx-1,npml-1),psi_Exy_2(Nx-1,npml)
+double precision psi_Hzy_1(Nx-1,npml-1),psi_Exy_1(Nx-1,npml),psi_Eyx_1(npml,N_loc)
+double precision psi_Hzy_2(Nx-1,npml-1),psi_Exy_2(Nx-1,npml),psi_Eyx_2(npml,N_loc)
 double precision be_y(npml),ce_y(npml),alphae_y(npml),sige_y(npml),kappae_y(npml)
 double precision bh_y(npml-1),ch_y(npml-1),alphah_y(npml-1),sigh_y(npml-1),kappah_y(npml-1)
+double precision be_x(npml),ce_x(npml),alphae_x(npml),sige_x(npml),kappae_x(npml)
 double precision den_ex(Nx),den_hx(Nx),den_ey(N_loc),den_hy(N_loc)
 
 double precision psi_Hzy_1_inc(npml-1),psi_Exy_1_inc(npml)                              
@@ -220,7 +221,7 @@ do j=1,npml
    ce_y(j)=sige_y(j)*(be_y(j)-1.0)/(sige_y(j)+kappae_y(j)*alphae_y(j))/kappae_y(j)
  endif
 enddo
-   
+
 do j=1,npml-1
  sigh_y(j)=sigmaCPML*((npml-j-0.5)/(npml-1.0))**m
  alphah_y(j)=alphaCPML*((j-0.5)/(npml-1.0))**ma
@@ -228,6 +229,22 @@ do j=1,npml-1
  bh_y(j)=exp(-(sigh_y(j)/kappah_y(j)+alphah_y(j))*dt/eps0)
  ch_y(j)=sigh_y(j)*(bh_y(j)-1.0)/(sigh_y(j)+kappah_y(j)*alphah_y(j))/kappah_y(j)
 enddo
+
+do i = 1,npml
+ sige_x(i)=sigmaCPML*((npml-i)/(npml-1.0))**m
+ alphae_x(i)=alphaCPML*((i-1)/(npml-1.0))**ma
+ kappae_x(i)=1.0+(kappaCPML-1.0)*((npml-i)/(npml-1.0))**m
+ be_x(i)=exp(-(sige_x(i)/kappae_x(i)+alphae_x(i))*dt/eps0)
+ if( &
+    (sige_x(i)==0.0).and.&
+    (alphae_x(i)==0.0).and. &
+    (i==npml) &
+   )then
+   ce_x(i)=0.0
+  else
+   ce_x(i)=sige_x(i)*(be_x(i)-1.0)/(sige_x(i)+kappae_x(i)*alphae_x(i))/kappae_x(i)
+ endif
+enddo 
 
 den_hy=1.0/dy
 if(myrank==0)then
@@ -563,6 +580,9 @@ endif
 !:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::!
 !:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::!
 if((myrank>=0).and.(myrank<(nprocs-1)))then
+
+!Left Periodicity
+
  i=1
   do j=1,N_loc
    if(FBy(i,j))then
@@ -573,6 +593,8 @@ if((myrank>=0).and.(myrank<(nprocs-1)))then
 	 Ey(i,j)=Ey(i,j)+dt_eps0*(Hz(Nx-1,j)-Hz(i,j))*den_ex(i)
    endif
 enddo
+
+!Interior Update
 
  do i=2,Nx-1
   do j=1,N_loc
@@ -585,6 +607,40 @@ enddo
    endif
   enddo
  enddo
+ 
+ !Left PML, Ey
+ 
+ do j = 1,N_loc
+  do i = 2,npml
+   if(FBy(i,j))then
+    psi_Eyx_1(i,j)=be_x(i)*psi_Eyx_1(i,j)+ce_x(i)*(Hz(i-1,j)-Hz(i,j))/dx
+    PDy(i,j) = PDy(i,j) + A2*(C3*psi_Eyx_1(i,j))
+    Ey(i,j) = Ey(i,j) + C3*psi_Eyx_1(i,j)
+   else
+    psi_Eyx_1(i,j)=be_x(i)*psi_Eyx_1(i,j)+ce_x(i)*(Hz(i-1,j)-Hz(i,j))/dx
+    Ey(i,j)=Ey(i,j)+dt_eps0*psi_Eyx_1(i,j)
+   endif
+  enddo
+ enddo
+ 
+!Right PML, Ey
+
+ do j = 1,N_loc
+  ii = npml
+  do i = (Nx-1)-(npml-2), Nx-1
+   if(FBy(i,j))then
+    psi_Eyx_2(i,j)=be_x(ii)*psi_Eyx_2(i,j)+ce_x(ii)*(Hz(i-1,j)-Hz(i,j))/dx
+    PDy(i,j) = PDy(i,j) + A2*(C3*psi_Eyx_2(i,j))
+    Ey(i,j) = Ey(i,j) + C3*psi_Eyx_2(i,j)
+   else
+    psi_Eyx_2(i,j)=be_x(ii)*psi_Eyx_2(i,j)+ce_x(ii)*(Hz(i-1,j)-Hz(i,j))/dx
+    Ey(i,j)=Ey(i,j)+dt_eps0*psi_Eyx_2(i,j)
+   endif
+   ii = ii - 1
+  enddo
+ enddo
+
+!Right Peridoicity
 
  i=Nx
   do j=1,N_loc
