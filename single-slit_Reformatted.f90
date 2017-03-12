@@ -468,6 +468,7 @@ if((myrank>0).and.(myrank<(nprocs-1)))then
   do i=1,npml-1
    psi_Hzx_1(i,j)=bh_x(i)*psi_Hzx_1(i,j)+ch_x(i)*(Ey(i,j)-Ey(i+1,j))/dx
    Hz(i,j)=Hz(i,j)+dt_mu0*psi_Hzx_1(i,j)
+  enddo
 ! Right PML, Hz
   ii=npml-1
   do i=(Nx-1) - (npml-2),Nx-1
