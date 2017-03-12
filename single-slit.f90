@@ -408,20 +408,20 @@ if(myrank==0)then
 			               (Ex_get(i)-Ex(i,j))*den_hy(j))
  enddo
 
- do j=1,N_loc
-! Left PML, Hz
-  do i=1,npml-1
-   psi_Hzx_1(i,j)=bh_x(i)*psi_Hzx_1(i,j)+ch_x(i)*(Ey(i,j)-Ey(i+1,j))/dx
-   Hz(i,j)=Hz(i,j)+dt_mu0*psi_Hzx_1(i,j)
-  enddo
-! Right PML, Hz
-  ii=npml-1
-  do i=(Nx-1) - (npml-2),Nx-1
-   psi_Hzx_2(ii,j)=bh_x(ii)*psi_Hzx_2(ii,j)+ch_x(ii)*(Ey(i,j)-Ey(i+1,j))/dx
-   Hz(i,j)=Hz(i,j)+dt_mu0*psi_Hzx_2(ii,j)
-   ii=ii-1
-  enddo
- enddo
+! do j=1,N_loc
+!! Left PML, Hz
+!  do i=1,npml-1
+!   psi_Hzx_1(i,j)=bh_x(i)*psi_Hzx_1(i,j)+ch_x(i)*(Ey(i,j)-Ey(i+1,j))/dx
+!   Hz(i,j)=Hz(i,j)+dt_mu0*psi_Hzx_1(i,j)
+!  enddo
+!! Right PML, Hz
+!  ii=npml-1
+!  do i=(Nx-1) - (npml-2),Nx-1
+!   psi_Hzx_2(ii,j)=bh_x(ii)*psi_Hzx_2(ii,j)+ch_x(ii)*(Ey(i,j)-Ey(i+1,j))/dx
+!   Hz(i,j)=Hz(i,j)+dt_mu0*psi_Hzx_2(ii,j)
+!   ii=ii-1
+!  enddo
+! enddo
 
  do i=1,Nx-1
 ! Bottom PML, Hz
@@ -462,20 +462,20 @@ if((myrank>0).and.(myrank<(nprocs-1)))then
 			               (Ex_get(i)-Ex(i,j))*den_hy(j))
  enddo
 
- do j=1,N_loc
-! Left PML, Hz
-  do i=1,npml-1
-   psi_Hzx_1(i,j)=bh_x(i)*psi_Hzx_1(i,j)+ch_x(i)*(Ey(i,j)-Ey(i+1,j))/dx
-   Hz(i,j)=Hz(i,j)+dt_mu0*psi_Hzx_1(i,j)
-  enddo
-! Right PML, Hz
-  ii=npml-1
-  do i=(Nx-1) - (npml-2),Nx-1
-   psi_Hzx_2(ii,j)=bh_x(ii)*psi_Hzx_2(ii,j)+ch_x(ii)*(Ey(i,j)-Ey(i+1,j))/dx
-   Hz(i,j)=Hz(i,j)+dt_mu0*psi_Hzx_2(ii,j)
-   ii=ii-1
-  enddo
- enddo
+! do j=1,N_loc
+!! Left PML, Hz
+!  do i=1,npml-1
+!   psi_Hzx_1(i,j)=bh_x(i)*psi_Hzx_1(i,j)+ch_x(i)*(Ey(i,j)-Ey(i+1,j))/dx
+!   Hz(i,j)=Hz(i,j)+dt_mu0*psi_Hzx_1(i,j)
+!  enddo
+!! Right PML, Hz
+!  ii=npml-1
+!  do i=(Nx-1) - (npml-2),Nx-1
+!   psi_Hzx_2(ii,j)=bh_x(ii)*psi_Hzx_2(ii,j)+ch_x(ii)*(Ey(i,j)-Ey(i+1,j))/dx
+!   Hz(i,j)=Hz(i,j)+dt_mu0*psi_Hzx_2(ii,j)
+!   ii=ii-1
+!  enddo
+! enddo
 
 !~~~~ incident ~~~~!
  do j=1,N_loc-1
@@ -511,20 +511,20 @@ if(myrank==(nprocs-1))then !rank=(nprocs-1), here PML in y-direction is only app
   enddo
  enddo
  
- do j=1,N_loc
-! Left PML, Hz
-  do i=1,npml-1
-   psi_Hzx_1(i,j)=bh_x(i)*psi_Hzx_1(i,j)+ch_x(i)*(Ey(i,j)-Ey(i+1,j))/dx
-   Hz(i,j)=Hz(i,j)+dt_mu0*psi_Hzx_1(i,j)
-  enddo
-! Right PML, Hz
-  ii=npml-1
-  do i=(Nx-1) - (npml-2),Nx-1
-   psi_Hzx_2(ii,j)=bh_x(ii)*psi_Hzx_2(ii,j)+ch_x(ii)*(Ey(i,j)-Ey(i+1,j))/dx
-   Hz(i,j)=Hz(i,j)+dt_mu0*psi_Hzx_2(ii,j)
-   ii=ii-1
-  enddo
- enddo
+! do j=1,N_loc
+!! Left PML, Hz
+!  do i=1,npml-1
+!   psi_Hzx_1(i,j)=bh_x(i)*psi_Hzx_1(i,j)+ch_x(i)*(Ey(i,j)-Ey(i+1,j))/dx
+!   Hz(i,j)=Hz(i,j)+dt_mu0*psi_Hzx_1(i,j)
+!  enddo
+!! Right PML, Hz
+!  ii=npml-1
+!  do i=(Nx-1) - (npml-2),Nx-1
+!   psi_Hzx_2(ii,j)=bh_x(ii)*psi_Hzx_2(ii,j)+ch_x(ii)*(Ey(i,j)-Ey(i+1,j))/dx
+!   Hz(i,j)=Hz(i,j)+dt_mu0*psi_Hzx_2(ii,j)
+!   ii=ii-1
+!  enddo
+! enddo
 
 ! Top PML, Hz
  do i=1,Nx-1    
@@ -721,20 +721,20 @@ if((myrank>=0).and.(myrank<(nprocs-1)))then
   enddo
  enddo
 
- do j=1,N_loc
-! Left PML, Ey
-  do i=2,npml
-   psi_Eyx_1(i,j)=be_x(i)*psi_Eyx_1(i,j)+ce_x(i)*(Hz(i-1,j)-Hz(i,j))/dx
-   Ey(i,j)=Ey(i,j)+dt_eps0*psi_Eyx_1(i,j)
-  enddo
-! Right PML, Ey
- ii=npml
- do i=(Nx-1) - (npml-2),Nx-1
-  psi_Eyx_2(ii,j)=be_x(ii)*psi_Eyx_2(ii,j)+ce_x(ii)*(Hz(i-1,j)-Hz(i,j))/dx
-  Ey(i,j)=Ey(i,j)+dt_eps0*psi_Eyx_2(ii,j)
-  ii=ii-1
-  enddo
- enddo
+! do j=1,N_loc
+!! Left PML, Ey
+!  do i=2,npml
+!   psi_Eyx_1(i,j)=be_x(i)*psi_Eyx_1(i,j)+ce_x(i)*(Hz(i-1,j)-Hz(i,j))/dx
+!   Ey(i,j)=Ey(i,j)+dt_eps0*psi_Eyx_1(i,j)
+!  enddo
+!! Right PML, Ey
+! ii=npml
+! do i=(Nx-1) - (npml-2),Nx-1
+!  psi_Eyx_2(ii,j)=be_x(ii)*psi_Eyx_2(ii,j)+ce_x(ii)*(Hz(i-1,j)-Hz(i,j))/dx
+!  Ey(i,j)=Ey(i,j)+dt_eps0*psi_Eyx_2(ii,j)
+!  ii=ii-1
+!  enddo
+! enddo
 
 !! scattered/total field updates
 ! if(myrank==mj0)then
@@ -770,20 +770,20 @@ if(myrank==(nprocs-1))then
   enddo
  enddo
 
- do j=1,N_loc-1
-! Left PML, Ey
-  do i=2,npml
-   psi_Eyx_1(i,j)=be_x(i)*psi_Eyx_1(i,j)+ce_x(i)*(Hz(i-1,j)-Hz(i,j))/dx
-   Ey(i,j)=Ey(i,j)+dt_eps0*psi_Eyx_1(i,j)
-  enddo
-! Right PML, Ey
-  ii=npml
-  do i=(Nx-1) - (npml-2),Nx-1
-   psi_Eyx_2(ii,j)=be_x(ii)*psi_Eyx_2(ii,j)+ce_x(ii)*(Hz(i-1,j)-Hz(i,j))/dx
-   Ey(i,j)=Ey(i,j)+dt_eps0*psi_Eyx_2(ii,j)
-   ii=ii-1
-  enddo
- enddo
+! do j=1,N_loc-1
+!! Left PML, Ey
+!  do i=2,npml
+!   psi_Eyx_1(i,j)=be_x(i)*psi_Eyx_1(i,j)+ce_x(i)*(Hz(i-1,j)-Hz(i,j))/dx
+!   Ey(i,j)=Ey(i,j)+dt_eps0*psi_Eyx_1(i,j)
+!  enddo
+!! Right PML, Ey
+!  ii=npml
+!  do i=(Nx-1) - (npml-2),Nx-1
+!   psi_Eyx_2(ii,j)=be_x(ii)*psi_Eyx_2(ii,j)+ce_x(ii)*(Hz(i-1,j)-Hz(i,j))/dx
+!   Ey(i,j)=Ey(i,j)+dt_eps0*psi_Eyx_2(ii,j)
+!   ii=ii-1
+!  enddo
+! enddo
 endif
 
 
