@@ -724,13 +724,13 @@ if((myrank>=0).and.(myrank<(nprocs-1)))then
  do j = 1,N_loc
   ii=npml
   do i=(Nx-1)-(npml-2),Nx-1
-   psi_Eyx_2(ii,j)=be_x(ii)*psi_Eyx_2(ii,j)+ce_x(ii)*(Hz(i-1,j)-Hz(i,j))/dx !Occurs first regardless of material
+   psi_Eyx_1(i,j)=be_x(i)*psi_Eyx_1(i,j)+ce_x(i)*(Hz(i-1,j)-Hz(i,j))/dx !Occurs first regardless of material
    
    if(FBy(i,j))then
-    Ey(i,j)=Ey(i,j)+Cb*psi_Eyx_2(ii,j)
-    PDy(i,j)=PDy(i,j)+A2*(Cb*psi_Eyx_2(ii,j))
+    Ey(i,j)=Ey(i,j)+Cb*psi_Eyx_1(i,j)
+    PDy(i,j)=PDy(i,j)+A2*(Cb*psi_Eyx_1(i,j))
    else
-    Ey(i,j)=Ey(i,j)+dt_eps0*psi_Eyx_2(ii,j)
+    Ey(i,j)=Ey(i,j)+dt_eps0*psi_Eyx_1(i,j)
    endif
   
   ii = ii-1 
