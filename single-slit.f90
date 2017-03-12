@@ -594,10 +594,6 @@ endif
 
 if((myrank>0).and.(myrank<(nprocs-1)))then
 
-!
-!~~~ Source ~~~!
-!
-
  if(myrank == ms)then
   j = js
   do i = iw1, iw2
@@ -788,8 +784,8 @@ if(myrank==mwR)then
    Ex_temp(i,nn,1)=Ex_temp(i,nn,1)+tmp1*(Ex(i-1,j)+Ex(i,j))/2.0 - tmp1*Ex_inc(j) !Take only the reflected field; subtract Inc
    Ex_temp(i,nn,2)=Ex_temp(i,nn,2)+tmp2*(Ex(i-1,j)+Ex(i,j))/2.0 - tmp2*Ex_inc(j) !Take only the reflected field; subtract Inc
   
-   Hz_temp(i,nn,1)=Hz_temp(i,nn,1)+tmp1*(Hz(i-1,j)+Hz(i,j)+Hz(i-1,j-1)+Hz(i,j-1))/4.0 - tmp1*(Hz_inc(j-1)+Hz_inc(j))/2
-   Hz_temp(i,nn,2)=Hz_temp(i,nn,2)+tmp2*(Hz(i-1,j)+Hz(i,j)+Hz(i-1,j-1)+Hz(i,j-1))/4.0 - tmp2*(Hz_inc(j-1)+Hz_inc(j))/2
+   Hz_temp(i,nn,1)=Hz_temp(i,nn,1)+tmp1*(Hz(i-1,j)+Hz(i,j)+Hz(i-1,j-1)+Hz(i,j-1))/4.0
+   Hz_temp(i,nn,2)=Hz_temp(i,nn,2)+tmp2*(Hz(i-1,j)+Hz(i,j)+Hz(i-1,j-1)+Hz(i,j-1))/4.0
 
    Ex_temp_inc(i,nn,1)=Ex_temp_inc(i,nn,1)+tmp1*Ex_inc(j)
    Ex_temp_inc(i,nn,2)=Ex_temp_inc(i,nn,2)+tmp2*Ex_inc(j)
