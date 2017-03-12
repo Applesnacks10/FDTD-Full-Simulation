@@ -68,10 +68,8 @@ double precision psi_Hzy_2_inc(npml-1),psi_Exy_2_inc(npml)
 !
 double precision tmp
 
-!integer, parameter :: iw1 = 1 + (npml-2), iw2 = Nx-1 - (npml-2) !Spans the interior
-!integer, parameter :: iw1 = 1 + (npml-1), iw2 = Nx-1 - (npml-1) !Spans the interior
-integer, parameter :: iw1 = 1 + (npml+5), iw2 = Nx-1 - (npml+5) !Spans the interior
-
+integer, parameter :: iw1 = npml-1, iw2 = Nx-1 - (npml-2) !Spans the interior
+!integer, parameter :: iw1 = npml, iw2 = Nx-1 - (npml-1) !Spans the interior
 integer, parameter :: mwR=30,jwR=31  !<--- + 590nm
 integer, parameter :: mwT=1,jwT=21   !<--- - 580nm
 
@@ -790,8 +788,8 @@ if(myrank==mwR)then
    Ex_temp(i,nn,1)=Ex_temp(i,nn,1)+tmp1*(Ex(i-1,j)+Ex(i,j))/2.0 - tmp1*Ex_inc(j) !Take only the reflected field; subtract Inc
    Ex_temp(i,nn,2)=Ex_temp(i,nn,2)+tmp2*(Ex(i-1,j)+Ex(i,j))/2.0 - tmp2*Ex_inc(j) !Take only the reflected field; subtract Inc
   
-   Hz_temp(i,nn,1)=Hz_temp(i,nn,1)+tmp1*(Hz(i-1,j)+Hz(i,j)+Hz(i-1,j-1)+Hz(i,j-1))/4.0 - tmp1*(Hz_inc(j-1)+Hz_inc(j))/2.0
-   Hz_temp(i,nn,2)=Hz_temp(i,nn,2)+tmp2*(Hz(i-1,j)+Hz(i,j)+Hz(i-1,j-1)+Hz(i,j-1))/4.0 - tmp2*(Hz_inc(j-1)+Hz_inc(j))/2.0
+   Hz_temp(i,nn,1)=Hz_temp(i,nn,1)+tmp1*(Hz(i-1,j)+Hz(i,j)+Hz(i-1,j-1)+Hz(i,j-1))/4.0 - tmp1*(Hz_inc(j-1)+Hz_inc(j))/2
+   Hz_temp(i,nn,2)=Hz_temp(i,nn,2)+tmp2*(Hz(i-1,j)+Hz(i,j)+Hz(i-1,j-1)+Hz(i,j-1))/4.0 - tmp2*(Hz_inc(j-1)+Hz_inc(j))/2
 
    Ex_temp_inc(i,nn,1)=Ex_temp_inc(i,nn,1)+tmp1*Ex_inc(j)
    Ex_temp_inc(i,nn,2)=Ex_temp_inc(i,nn,2)+tmp2*Ex_inc(j)
