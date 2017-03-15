@@ -43,7 +43,9 @@ double precision psi_Hzy_2_inc(npml-1),psi_Exy_2_inc(npml)
 !
 !~~~ scattered field zone ~~~!
 !
-integer, parameter :: mj1=28,j1=21
+integer, parameter :: mj0=1,j0=11   !<--- - 590nm
+integer, parameter :: mj1=28,j1=21  !<--- + 500nm
+
 integer, parameter :: ms=29,js=21
 
 double precision, parameter :: tau=0.36d-15,E0=1.0,omega=ev_to_radsec*3.0
@@ -56,8 +58,8 @@ double precision tmp1,tmp2,omega_P(N_w),SN(N_w,2)
 double precision tmp
 
 integer, parameter :: iw1=npml,iw2= Nx - (npml-1)
-integer, parameter :: mwR=29,jwR=11
-integer, parameter :: mwT=1,jwT=11
+integer, parameter :: mwR=30,jwR=31  !<--- + 590nm
+integer, parameter :: mwT=1,jwT=21   !<--- - 580nm
 
 double precision Ex_temp(iw1:iw2,N_w,2),Hz_temp(iw1:iw2,N_w,2)
 double precision Ex_temp_inc(iw1:iw2,N_w,2),Hz_temp_inc(iw1:iw2,N_w,2)
@@ -484,6 +486,12 @@ if((myrank>0).and.(myrank<(nprocs-1)))then
   Hz_inc(j)=Hz_inc(j)+dt_mu0*(Ex_get_inc-Ex_inc(j))*den_hy(j)
 
 ! scattered/total field updates
+ if(myrank==mj0)then
+  do i=iw1,iw2-1
+   Hz(i,j0-1)=Hz(i,j0-1)-dt_mu0*Ex_inc(j0)/dy
+  enddo
+ endif
+ 
  if(myrank==mj1)then
   do i=iw1,iw2-1
    Hz(i,j1)=Hz(i,j1)+dt_mu0*Ex_inc(j1)/dy
@@ -634,6 +642,12 @@ if((myrank>0).and.(myrank<(nprocs-1)))then !no PML for y-direction here
  enddo
 
 ! scattered/total field updates
+ if(myrank==mj0)then
+  do i=iw1,iw2-1
+   Ex(i,j0)=Ex(i,j0)-dt_eps0*Hz_inc(j0-1)/dy
+  enddo
+ endif
+
  if(myrank==mj1)then
   do i=iw1,iw2-1
    Ex(i,j1)=Ex(i,j1)+dt_eps0*Hz_inc(j1)/dy
