@@ -725,14 +725,27 @@ if((myrank>=0).and.(myrank<(nprocs-1)))then
  do j=1,N_loc
 ! Left PML, Ey
   do i=2,npml
-   psi_Eyx_1(i,j)=be_x(i)*psi_Eyx_1(i,j)+ce_x(i)*(Hz(i-1,j)-Hz(i,j))/dx
-   Ey(i,j)=Ey(i,j)+dt_eps0*psi_Eyx_1(i,j)
+   if(FBy(i,j))then
+    psi_Eyx_1(i,j)=be_x(i)*psi_Eyx_1(i,j)+ce_x(i)*(Hz(i-1,j)-Hz(i,j))/dx
+    PDy(i,j) = PDy(i,j) + A2*(Cb*psi_Eyx_1(i,j))
+    Ey(i,j) = Ey(i,j) + Cb*psi_Eyx_1(i,j)
+   else
+    psi_Eyx_1(i,j)=be_x(i)*psi_Eyx_1(i,j)+ce_x(i)*(Hz(i-1,j)-Hz(i,j))/dx
+    Ey(i,j)=Ey(i,j)+dt_eps0*psi_Eyx_1(i,j)
+   endif
   enddo
 ! Right PML, Ey
  ii=npml
  do i=(Nx-1) - (npml-2),Nx-1
-  psi_Eyx_2(ii,j)=be_x(ii)*psi_Eyx_2(ii,j)+ce_x(ii)*(Hz(i-1,j)-Hz(i,j))/dx
-  Ey(i,j)=Ey(i,j)+dt_eps0*psi_Eyx_2(ii,j)
+  if(FBy(i,j))then
+   psi_Eyx_2(ii,j)=be_x(ii)*psi_Eyx_2(ii,j)+ce_x(ii)*(Hz(i-1,j)-Hz(i,j))/dx
+   PDy(i,j) = PDy(i,j) + A2*(Cb*psi_Eyx_2(ii,j))
+   Ey(i,j) = Ey(i,j) + Cb*psi_Eyx_2(ii,j)
+  else  
+   psi_Eyx_2(ii,j)=be_x(ii)*psi_Eyx_2(ii,j)+ce_x(ii)*(Hz(i-1,j)-Hz(i,j))/dx
+   Ey(i,j)=Ey(i,j)+dt_eps0*psi_Eyx_2(ii,j)
+  endif
+  
   ii=ii-1
   enddo
  enddo
