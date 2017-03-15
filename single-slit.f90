@@ -43,6 +43,7 @@ double precision psi_Hzy_2_inc(npml-1),psi_Exy_2_inc(npml)
 !
 !~~~ scattered field zone ~~~!
 !
+integer, parameter :: i0=26,i1=276  !<--- +/- 125nm
 integer, parameter :: mj0=1,j0=11   !<--- - 590nm
 integer, parameter :: mj1=28,j1=21  !<--- + 500nm
 
@@ -57,7 +58,7 @@ double precision tmp1,tmp2,omega_P(N_w),SN(N_w,2)
 !
 double precision tmp
 
-integer, parameter :: iw1=26,iw2=276
+integer, parameter :: iw1=i0,iw2=i1
 integer, parameter :: mwR=30,jwR=31  !<--- + 590nm
 integer, parameter :: mwT=1,jwT=21   !<--- - 580nm
 
@@ -97,7 +98,7 @@ logical FBx(Nx-1,N_loc),FBy(Nx,N_loc)
 
 double precision, parameter :: R=83.2525D-9
 double precision, parameter :: z1=-75.2525D-9,z2=75.2525d-9
-double precision, parameter :: slit_length=200.2525d-9 !should be < 2*x(iw2)
+double precision, parameter :: slit_length=200.2525d-9 !should be < 2*x(i1)
 
 !
 !~~~ EM field components ~~~!
@@ -487,13 +488,13 @@ if((myrank>0).and.(myrank<(nprocs-1)))then
 
 ! scattered/total field updates
  if(myrank==mj0)then
-  do i=iw1,iw2-1
+  do i=i0,i1-1
    Hz(i,j0-1)=Hz(i,j0-1)-dt_mu0*Ex_inc(j0)/dy
   enddo
  endif
  
  if(myrank==mj1)then
-  do i=iw1,iw2-1
+  do i=i0,i1-1
    Hz(i,j1)=Hz(i,j1)+dt_mu0*Ex_inc(j1)/dy
   enddo
  endif
@@ -643,13 +644,13 @@ if((myrank>0).and.(myrank<(nprocs-1)))then !no PML for y-direction here
 
 ! scattered/total field updates
  if(myrank==mj0)then
-  do i=iw1,iw2-1
+  do i=i0,i1-1
    Ex(i,j0)=Ex(i,j0)-dt_eps0*Hz_inc(j0-1)/dy
   enddo
  endif
 
  if(myrank==mj1)then
-  do i=iw1,iw2-1
+  do i=i0,i1-1
    Ex(i,j1)=Ex(i,j1)+dt_eps0*Hz_inc(j1)/dy
   enddo
  endif
@@ -736,27 +737,27 @@ if((myrank>=0).and.(myrank<(nprocs-1)))then
   enddo
  enddo
 
-!! scattered/total field updates
-! if(myrank==mj0)then
-!  do j=j0,N_loc
-!   Ey(iw1,j)=Ey(iw1,j)+dt_eps0*Hz_inc(j)/dy
-!   Ey(iw2,j)=Ey(iw2,j)-dt_eps0*Hz_inc(j)/dy
-!  enddo
-! endif
-!
-! if((myrank>mj0).and.(myrank<mj1))then
-!  do j=1,N_loc
-!   Ey(iw1,j)=Ey(iw1,j)+dt_eps0*Hz_inc(j)/dy
-!   Ey(iw2,j)=Ey(iw2,j)-dt_eps0*Hz_inc(j)/dy
-!  enddo
-! endif
-!
-! if(myrank==mj1)then
-!  do j=1,j1-1
-!   Ey(iw1,j)=Ey(iw1,j)+dt_eps0*Hz_inc(j)/dy
-!   Ey(iw2,j)=Ey(iw2,j)-dt_eps0*Hz_inc(j)/dy
-!  enddo
-! endif
+! scattered/total field updates
+ if(myrank==mj0)then
+  do j=j0,N_loc
+   Ey(i0,j)=Ey(i0,j)+dt_eps0*Hz_inc(j)/dy
+   Ey(i1,j)=Ey(i1,j)-dt_eps0*Hz_inc(j)/dy
+  enddo
+ endif
+
+ if((myrank>mj0).and.(myrank<mj1))then
+  do j=1,N_loc
+   Ey(i0,j)=Ey(i0,j)+dt_eps0*Hz_inc(j)/dy
+   Ey(i1,j)=Ey(i1,j)-dt_eps0*Hz_inc(j)/dy
+  enddo
+ endif
+
+ if(myrank==mj1)then
+  do j=1,j1-1
+   Ey(i0,j)=Ey(i0,j)+dt_eps0*Hz_inc(j)/dy
+   Ey(i1,j)=Ey(i1,j)-dt_eps0*Hz_inc(j)/dy
+  enddo
+ endif
 endif
 
 !----------------------------------
