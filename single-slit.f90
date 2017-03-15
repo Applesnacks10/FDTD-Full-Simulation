@@ -43,7 +43,7 @@ double precision psi_Hzy_2_inc(npml-1),psi_Exy_2_inc(npml)
 !
 !~~~ scattered field zone ~~~!
 !
-integer, parameter :: i0=26,i1=276  !<--- +/- 125nm
+integer, parameter :: i0 = npml, i1 = (Nx-1) - (npml-1)
 integer, parameter :: mj0=1,j0=11   !<--- - 590nm
 integer, parameter :: mj1=28,j1=21  !<--- + 500nm
 
@@ -98,7 +98,7 @@ logical FBx(Nx-1,N_loc),FBy(Nx,N_loc)
 
 double precision, parameter :: R=83.2525D-9
 double precision, parameter :: z1=-75.2525D-9,z2=75.2525d-9
-double precision, parameter :: slit_length=200.2525d-9 !should be < 2*x(i1)
+!double precision, parameter :: slit_length=200.2525d-9 !should be < 2*x(i1)
 
 !
 !~~~ EM field components ~~~!
@@ -187,8 +187,8 @@ FBy=.false.
 do i=1,Nx-1
  do j=1,N_loc
   if( &
-    ((y(j)>z1).and.(y(j)<z2).and.(xM2(i)<(-R)).and.(xM2(i)>(-slit_length/2.0))).or. &
-    ((y(j)>z1).and.(y(j)<z2).and.(xM2(i)>R).and.(xM2(i)<(slit_length/2.0))) &
+    ((y(j)>z1).and.(y(j)<z2).and.(xM2(i)<(-R))).or. &
+    ((y(j)>z1).and.(y(j)<z2).and.(xM2(i)>R)) &
      )then
     FBx(i,j)=.true.
    else
@@ -200,8 +200,8 @@ enddo
 do i=1,Nx
  do j=1,N_loc
   if( &
-    ((yM2(j)>z1).and.(yM2(j)<z2).and.(x(i)<(-R)).and.(x(i)>(-slit_length/2.0))).or. &
-    ((yM2(j)>z1).and.(yM2(j)<z2).and.(x(i)>R).and.(x(i)<(slit_length/2.0))) &
+    ((yM2(j)>z1).and.(yM2(j)<z2).and.(x(i)<(-R))).or. &
+    ((yM2(j)>z1).and.(yM2(j)<z2).and.(x(i)>R)) &
      )then
     FBy(i,j)=.true.
    else
