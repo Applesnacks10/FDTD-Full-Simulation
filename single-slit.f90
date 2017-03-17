@@ -18,8 +18,8 @@ double precision, parameter :: omega_min=ev_to_radsec*1.5,omega_max=ev_to_radsec
 integer, parameter :: Ny=1281,N_loc=40
 double precision, parameter :: y0=-640.0D-9,yM=640.0D-9
 
-integer, parameter :: Nx=301
-double precision, parameter :: x0=-150.0e-9,xM=150.0e-9
+integer, parameter :: Nx=3001
+double precision, parameter :: x0=-1500.0e-9,xM=1500.0e-9
 
 !
 !~~~ CPML ~~~!
@@ -43,7 +43,7 @@ double precision psi_Hzy_2_inc(npml-1),psi_Exy_2_inc(npml)
 !
 !~~~ scattered field zone ~~~!
 !
-integer, parameter :: i0 = npml, i1 = (Nx-1) - (npml-1)
+integer, parameter :: i0 = npml+1, i1 = (Nx-1) - (npml)
 integer, parameter :: mj0=1,j0=11   !<--- - 590nm
 integer, parameter :: mj1=28,j1=21  !<--- + 500nm
 
