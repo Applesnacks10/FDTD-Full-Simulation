@@ -15,11 +15,11 @@ double precision, parameter :: ev_to_radsec=2.0*pi*2.4180e14
 integer, parameter :: Nt=200000,N_w=400
 double precision, parameter :: omega_min=ev_to_radsec*1.5,omega_max=ev_to_radsec*4.0
 
-integer, parameter :: Ny=1281,N_loc=20
+integer, parameter :: Ny=1281,N_loc=40
 double precision, parameter :: y0=-640.0D-9,yM=640.0D-9
 
-integer, parameter :: Nx=30001
-double precision, parameter :: x0=-15000.0e-9,xM=15000.0e-9
+integer, parameter :: Nx=3001
+double precision, parameter :: x0=-1500.0e-9,xM=1500.0e-9
 
 !
 !~~~ CPML ~~~!
@@ -44,10 +44,10 @@ double precision psi_Hzy_2_inc(npml-1),psi_Exy_2_inc(npml)
 !~~~ scattered field zone ~~~!
 !
 integer, parameter :: i0 = 1 + (npml), i1 = Nx - (npml)
-integer, parameter :: mj0=2,j0=11   !<--- - 590nm
-integer, parameter :: mj1=57,j1=1  !<--- + 500nm
+integer, parameter :: mj0=1,j0=11   !<--- - 590nm
+integer, parameter :: mj1=28,j1=21  !<--- + 500nm
 
-integer, parameter :: ms=59,js=1
+integer, parameter :: ms=29,js=21
 
 double precision, parameter :: tau=0.36d-15,E0=1.0,omega=ev_to_radsec*3.0
 double precision aBH(4)
@@ -59,8 +59,8 @@ double precision tmp1,tmp2,omega_P(N_w),SN(N_w,2)
 double precision tmp
 
 integer, parameter :: iw1=i0,iw2=i1
-integer, parameter :: mwR=61,jwR=11  !<--- + 590nm
-integer, parameter :: mwT=3,jwT=1   !<--- - 580nm
+integer, parameter :: mwR=30,jwR=31  !<--- + 590nm
+integer, parameter :: mwT=1,jwT=21   !<--- - 580nm
 
 double precision Ex_temp(iw1:iw2,N_w,2),Hz_temp(iw1:iw2,N_w,2)
 double precision Ex_temp_inc(iw1:iw2,N_w,2),Hz_temp_inc(iw1:iw2,N_w,2)
