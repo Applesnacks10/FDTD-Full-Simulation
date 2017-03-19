@@ -709,7 +709,7 @@ enddo
   enddo
  enddo
  
- !Left PML, Ey
+!Left PML, Ey
  
  do j = 1,N_loc
   do i = 2,npml
