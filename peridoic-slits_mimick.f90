@@ -716,7 +716,7 @@ if((myrank>=0).and.(myrank<(nprocs-1)))then
  i=1
   do j=1,N_loc
    if(FBy(i,j))then
-     tmpE=C1*Ey(i,j)+C3*(Hz(Nx-1,j)-Hz(i,j))*den_ex(i)-C4*PDy(i,j)
+     tmpE=Ca*Ey(i,j)+Cb*(Hz(Nx-1,j)-Hz(i,j))*den_ex(i)-Cc*PDy(i,j)
      PDy(i,j)=A1*PDy(i,j)+A2*(tmpE+Ey(i,j))
      Ey(i,j)=tmpE
 	else
@@ -729,8 +729,8 @@ if((myrank>=0).and.(myrank<(nprocs-1)))then
  do j = 1,N_loc
   if(FBy(i,j))then
    psi_Eyx_1(i,j)=be_x(i)*psi_Eyx_1(i,j)+ce_x(i)*(Hz(Nx-1,j)-Hz(i,j))/dx
-   PDy(i,j) = PDy(i,j) + A2*(C3*psi_Eyx_1(i,j))
-   Ey(i,j) = Ey(i,j) + C3*psi_Eyx_1(i,j)
+   PDy(i,j) = PDy(i,j) + A2*(Cb*psi_Eyx_1(i,j))
+   Ey(i,j) = Ey(i,j) + Cb*psi_Eyx_1(i,j)
   else
    psi_Eyx_1(i,j)=be_x(i)*psi_Eyx_1(i,j)+ce_x(i)*(Hz(Nx-1,j)-Hz(i,j))/dx
    Ey(i,j)=Ey(i,j)+dt_eps0*psi_Eyx_1(i,j)
@@ -773,8 +773,8 @@ if((myrank>=0).and.(myrank<(nprocs-1)))then
   do i = (Nx-1)-(npml-2), Nx-1
    if(FBy(i,j))then
     psi_Eyx_2(i,j)=be_x(ii)*psi_Eyx_2(i,j)+ce_x(ii)*(Hz(i-1,j)-Hz(i,j))/dx
-    PDy(i,j) = PDy(i,j) + A2*(C3*psi_Eyx_2(i,j))
-    Ey(i,j) = Ey(i,j) + C3*psi_Eyx_2(i,j)
+    PDy(i,j) = PDy(i,j) + A2*(Cb*psi_Eyx_2(i,j))
+    Ey(i,j) = Ey(i,j) + Cb*psi_Eyx_2(i,j)
    else
     psi_Eyx_2(i,j)=be_x(ii)*psi_Eyx_2(i,j)+ce_x(ii)*(Hz(i-1,j)-Hz(i,j))/dx
     Ey(i,j)=Ey(i,j)+dt_eps0*psi_Eyx_2(i,j)
@@ -788,7 +788,7 @@ if((myrank>=0).and.(myrank<(nprocs-1)))then
  i=Nx
   do j=1,N_loc
    if(FBy(i,j))then
-     tmpE=C1*Ey(i,j)+C3*(Hz(i-1,j)-Hz(1,j))*den_ex(i)-C4*PDy(i,j)
+     tmpE=Ca*Ey(i,j)+Cb*(Hz(i-1,j)-Hz(1,j))*den_ex(i)-Cc*PDy(i,j)
      PDy(i,j)=A1*PDy(i,j)+A2*(tmpE+Ey(i,j))
      Ey(i,j)=tmpE
 	else
@@ -802,8 +802,8 @@ if((myrank>=0).and.(myrank<(nprocs-1)))then
  do j = 1,N_loc
   if(FBy(i,j))then
    psi_Eyx_2(i,j)=be_x(ii)*psi_Eyx_2(i,j)+ce_x(ii)*(Hz(i-1,j)-Hz(1,j))/dx
-   PDy(i,j) = PDy(i,j) + A2*(C3*psi_Eyx_2(i,j))
-   Ey(i,j) = Ey(i,j) + C3*psi_Eyx_2(i,j)
+   PDy(i,j) = PDy(i,j) + A2*(Cb*psi_Eyx_2(i,j))
+   Ey(i,j) = Ey(i,j) + Cb*psi_Eyx_2(i,j)
   else
    psi_Eyx_2(i,j)=be_x(ii)*psi_Eyx_2(i,j)+ce_x(ii)*(Hz(i-1,j)-Hz(1,j))/dx
    Ey(i,j)=Ey(i,j)+dt_eps0*psi_Eyx_2(i,j)
