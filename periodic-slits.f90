@@ -18,12 +18,35 @@ double precision, parameter :: omega_min=ev_to_radsec*1.5,omega_max=ev_to_radsec
 integer, parameter :: Ny=1281,N_loc=40
 double precision, parameter :: y0=-640.0D-9,yM=640.0D-9
 
-integer, parameter :: Nx=301
-double precision, parameter :: x0=-150.0e-9,xM=150.0e-9
+integer, parameter :: Nx=30001
+double precision, parameter :: x0=-15000.0e-9,xM=15000.0e-9
+
+!
+!~~~ CPML ~~~!
+!
+integer, parameter :: npml=19,m=3,ma=1 
+double precision sigmaCPML,alphaCPML,kappaCPML
+double precision psi_Hzy_1(Nx-1,npml-1),psi_Exy_1(Nx-1,npml)                              
+double precision psi_Hzy_2(Nx-1,npml-1),psi_Exy_2(Nx-1,npml)
+double precision be_y(npml),ce_y(npml),alphae_y(npml),sige_y(npml),kappae_y(npml)
+double precision bh_y(npml-1),ch_y(npml-1),alphah_y(npml-1),sigh_y(npml-1),kappah_y(npml-1)
+double precision den_ex(Nx),den_hx(Nx),den_ey(N_loc),den_hy(N_loc)
+
+double precision psi_Hzx_1(npml-1,N_loc),psi_Eyx_1(npml,N_loc)
+double precision psi_Hzx_2(npml-1,N_loc),psi_Eyx_2(npml,N_loc)
+double precision be_x(npml),ce_x(npml),alphae_x(npml),sige_x(npml),kappae_x(npml)
+double precision bh_x(npml-1),ch_x(npml-1),alphah_x(npml-1),sigh_x(npml-1),kappah_x(npml-1)
+
+double precision psi_Hzy_1_inc(npml-1),psi_Exy_1_inc(npml)                              
+double precision psi_Hzy_2_inc(npml-1),psi_Exy_2_inc(npml)
+
 !
 !~~~ scattered field zone ~~~!
 !
-integer, parameter :: mj1=28,j1=21
+integer, parameter :: i0 = 1 + (npml), i1 = Nx - (npml)
+integer, parameter :: mj0=1,j0=11   !<--- - 590nm
+integer, parameter :: mj1=28,j1=21  !<--- + 500nm
+
 integer, parameter :: ms=29,js=21
 
 double precision, parameter :: tau=0.36d-15,E0=1.0,omega=ev_to_radsec*3.0
@@ -35,10 +58,9 @@ double precision tmp1,tmp2,omega_P(N_w),SN(N_w,2)
 !
 double precision tmp
 
-integer, parameter :: iw1= 1 + 29, iw2= Nx - 29
-!integer, parameter :: iw1 = npml+1, iw2 = (Nx) - (npml)
-integer, parameter :: mwR=29,jwR=11
-integer, parameter :: mwT=1,jwT=11
+integer, parameter :: iw1=i0,iw2=i1
+integer, parameter :: mwR=30,jwR=31  !<--- + 590nm
+integer, parameter :: mwT=1,jwT=21   !<--- - 580nm
 
 double precision Ex_temp(iw1:iw2,N_w,2),Hz_temp(iw1:iw2,N_w,2)
 double precision Ex_temp_inc(iw1:iw2,N_w,2),Hz_temp_inc(iw1:iw2,N_w,2)
@@ -58,32 +80,15 @@ double precision, parameter :: eps_delectric=1.0
 !~~~ time step ~~~!
 !
 double precision, parameter :: dt=dy/(2.0*c)
-!
-!~~~ CPML ~~~!
-!
-integer, parameter :: npml=19,m=3,ma=1 
-double precision sigmaCPML,alphaCPML,kappaCPML
-double precision psi_Hzy_1(Nx-1,npml-1),psi_Exy_1(Nx-1,npml)                              
-double precision psi_Hzy_2(Nx-1,npml-1),psi_Exy_2(Nx-1,npml)
-double precision be_y(npml),ce_y(npml),alphae_y(npml),sige_y(npml),kappae_y(npml)
-double precision bh_y(npml-1),ch_y(npml-1),alphah_y(npml-1),sigh_y(npml-1),kappah_y(npml-1)
-double precision den_ex(Nx),den_hx(Nx),den_ey(N_loc),den_hy(N_loc)
 
-double precision psi_Hzx_1(npml-1,N_loc),psi_Eyx_1(npml,N_loc)
-double precision psi_Hzx_2(npml-1,N_loc),psi_Eyx_2(npml,N_loc)
-double precision be_x(npml),ce_x(npml),alphae_x(npml),sige_x(npml),kappae_x(npml)
-double precision bh_x(npml-1),ch_x(npml-1),alphah_x(npml-1),sigh_x(npml-1),kappah_x(npml-1)
-
-double precision psi_Hzy_1_inc(npml-1),psi_Exy_1_inc(npml)                              
-double precision psi_Hzy_2_inc(npml-1),psi_Exy_2_inc(npml)
 !
 !~~~ Drude model for Ag ~~~!
 !
 double precision, parameter :: eps_r=8.926,omegaD=ev_to_radsec*11.585,GammaD=ev_to_radsec*0.203
 double precision, parameter :: A1=(2.0-GammaD*dt)/(2.0+GammaD*dt),A2=eps0*omegaD*omegaD*dt/(2.0+GammaD*dt)
-double precision, parameter :: C1=(eps_r*eps0/dt-0.5*A2)/(eps_r*eps0/dt+0.5*A2)
-double precision, parameter :: C3=1.0/(eps_r*eps0/dt+0.5*A2)
-double precision, parameter :: C4=0.5*(A1+1.0)/(eps_r*eps0/dt+0.5*A2)
+double precision, parameter :: Ca=(eps_r*eps0/dt-0.5*A2)/(eps_r*eps0/dt+0.5*A2)
+double precision, parameter :: Cb=1.0/(eps_r*eps0/dt+0.5*A2)
+double precision, parameter :: Cc=0.5*(A1+1.0)/(eps_r*eps0/dt+0.5*A2)
 
 double precision tmpE
 
@@ -93,6 +98,7 @@ logical FBx(Nx-1,N_loc),FBy(Nx,N_loc)
 
 double precision, parameter :: R=83.2525D-9
 double precision, parameter :: z1=-75.2525D-9,z2=75.2525d-9
+!double precision, parameter :: slit_length=200.2525d-9 !should be < 2*x(i1)
 
 !
 !~~~ EM field components ~~~!
@@ -269,7 +275,7 @@ if(myrank==0)then
  elseif(myrank==(nprocs-1))then
   jj=npml-1
   do j=1,(N_loc-1)
-   if(j>=(N_loc+1-npml))then
+   if(j>=((N_loc-1) - (npml-2)))then
      den_hy(j)=1.0/(kappah_y(jj)*dy)
      jj=jj-1
    endif
@@ -286,7 +292,7 @@ if(myrank==0)then
  elseif(myrank==(nprocs-1))then
   jj=npml
   do j=1,(N_loc-1)
-   if(j>=(N_loc+1-npml))then
+   if(j>=((N_loc-1) - (npml-2)))then
      den_ey(j)=1.0/(kappae_y(jj)*dy)
      jj=jj-1
    endif
@@ -297,7 +303,7 @@ ii=npml-1
 do i=1,Nx-1
  if(i<=(npml-1))then
    den_hx(i)=1.0/(kappah_x(i)*dx)
-  elseif(i>=(Nx+1-npml))then
+  elseif(i>=((Nx-1) - (npml-2)))then
    den_hx(i)=1.0/(kappah_x(ii)*dx)
    ii=ii-1
   else
@@ -309,7 +315,7 @@ ii=npml
 do i=1,Nx-1
  if(i<=npml)then
    den_ex(i)=1.0/(kappae_x(i)*dx)
-  elseif (i>=(Nx+1-npml))then
+  elseif (i>=((Nx-1) - (npml-2)))then
    den_ex(i)=1.0/(kappae_x(ii)*dx)
    ii=ii-1
   else
@@ -371,7 +377,7 @@ do n=1,Nt
 !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Hz ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!
 !:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::!
 !:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::!
- do j=1,(nprocs-1) !Ex send/recieve
+ do j=1,(nprocs-1) ! Send/Receive Ex
   itag=j
   itag1=j+1
   if(myrank==j)then
@@ -387,7 +393,11 @@ do n=1,Nt
   endif!send_recv
  enddo!nprocs
 
-if(myrank==0)then !rank=0, here PML in y-direction is only applied to the bottom part
+!-----------------------------
+!------------- 0 -------------
+!-----------------------------
+
+if(myrank==0)then
  do i=1,Nx-1
   do j=1,N_loc-1
    Hz(i,j)=Hz(i,j)+dt_mu0*((Ey(i,j)-Ey(i+1,j))*den_hx(i)+ &
@@ -398,24 +408,24 @@ if(myrank==0)then !rank=0, here PML in y-direction is only applied to the bottom
    Hz(i,j)=Hz(i,j)+dt_mu0*((Ey(i,j)-Ey(i+1,j))*den_hx(i)+ &
 			               (Ex_get(i)-Ex(i,j))*den_hy(j))
  enddo
- 
+
  do j=1,N_loc
-!  PML for left Hz, x-direction
+! Left PML, Hz
   do i=1,npml-1
    psi_Hzx_1(i,j)=bh_x(i)*psi_Hzx_1(i,j)+ch_x(i)*(Ey(i,j)-Ey(i+1,j))/dx
    Hz(i,j)=Hz(i,j)+dt_mu0*psi_Hzx_1(i,j)
   enddo
-!  PML for right Hz, x-direction
+! Right PML, Hz
   ii=npml-1
-  do i=Nx+1-npml,Nx-1
+  do i=(Nx-1) - (npml-2),Nx-1
    psi_Hzx_2(ii,j)=bh_x(ii)*psi_Hzx_2(ii,j)+ch_x(ii)*(Ey(i,j)-Ey(i+1,j))/dx
    Hz(i,j)=Hz(i,j)+dt_mu0*psi_Hzx_2(ii,j)
    ii=ii-1
   enddo
  enddo
- 
+
  do i=1,Nx-1
- !  PML for bottom Hz [bottom only here! since myrank=0], y-direction
+! Bottom PML, Hz
   do j=1,npml-1
    psi_Hzy_1(i,j)=bh_y(j)*psi_Hzy_1(i,j)+ch_y(j)*(Ex(i,j+1)-Ex(i,j))/dy
    Hz(i,j)=Hz(i,j)+dt_mu0*psi_Hzy_1(i,j)
@@ -430,14 +440,18 @@ if(myrank==0)then !rank=0, here PML in y-direction is only applied to the bottom
  j=N_loc
   Hz_inc(j)=Hz_inc(j)+dt_mu0*(Ex_get_inc-Ex_inc(j))*den_hy(j)
 
-!  PML for bottom Hz [bottom only here! since myrank=0], y-direction
+! Bottom PML, Hz_inc
  do j=1,npml-1
   psi_Hzy_1_inc(j)=bh_y(j)*psi_Hzy_1_inc(j)+ch_y(j)*(Ex_inc(j+1)-Ex_inc(j))/dy
   Hz_inc(j)=Hz_inc(j)+dt_mu0*psi_Hzy_1_inc(j)
  enddo
 endif
 
-if((myrank>0).and.(myrank<(nprocs-1)))then !no PML for y-direction here
+!----------------------------------
+!------------ Interior ------------
+!----------------------------------
+
+if((myrank>0).and.(myrank<(nprocs-1)))then
  do i=1,Nx-1
   do j=1,N_loc-1
    Hz(i,j)=Hz(i,j)+dt_mu0*((Ey(i,j)-Ey(i+1,j))*den_hx(i)+ &
@@ -450,14 +464,14 @@ if((myrank>0).and.(myrank<(nprocs-1)))then !no PML for y-direction here
  enddo
 
  do j=1,N_loc
-!  PML for left Hz, x-direction
+! Left PML, Hz
   do i=1,npml-1
    psi_Hzx_1(i,j)=bh_x(i)*psi_Hzx_1(i,j)+ch_x(i)*(Ey(i,j)-Ey(i+1,j))/dx
    Hz(i,j)=Hz(i,j)+dt_mu0*psi_Hzx_1(i,j)
   enddo
-!  PML for right Hz, x-direction
+! Right PML, Hz
   ii=npml-1
-  do i=Nx+1-npml,Nx-1
+  do i=(Nx-1) - (npml-2),Nx-1
    psi_Hzx_2(ii,j)=bh_x(ii)*psi_Hzx_2(ii,j)+ch_x(ii)*(Ey(i,j)-Ey(i+1,j))/dx
    Hz(i,j)=Hz(i,j)+dt_mu0*psi_Hzx_2(ii,j)
    ii=ii-1
@@ -473,12 +487,22 @@ if((myrank>0).and.(myrank<(nprocs-1)))then !no PML for y-direction here
   Hz_inc(j)=Hz_inc(j)+dt_mu0*(Ex_get_inc-Ex_inc(j))*den_hy(j)
 
 ! scattered/total field updates
+ if(myrank==mj0)then
+  do i=i0,i1-1
+   Hz(i,j0-1)=Hz(i,j0-1)-dt_mu0*Ex_inc(j0)/dy
+  enddo
+ endif
+ 
  if(myrank==mj1)then
-  do i=1,Nx-1
+  do i=i0,i1-1
    Hz(i,j1)=Hz(i,j1)+dt_mu0*Ex_inc(j1)/dy
   enddo
  endif
 endif
+
+!----------------------------------
+!------------ nprocs-1 ------------
+!----------------------------------
 
 if(myrank==(nprocs-1))then !rank=(nprocs-1), here PML in y-direction is only applied to the top part
  do i=1,Nx-1
@@ -489,24 +513,24 @@ if(myrank==(nprocs-1))then !rank=(nprocs-1), here PML in y-direction is only app
  enddo
  
  do j=1,N_loc
-!  PML for left Hz, x-direction
+! Left PML, Hz
   do i=1,npml-1
    psi_Hzx_1(i,j)=bh_x(i)*psi_Hzx_1(i,j)+ch_x(i)*(Ey(i,j)-Ey(i+1,j))/dx
    Hz(i,j)=Hz(i,j)+dt_mu0*psi_Hzx_1(i,j)
   enddo
-!  PML for right Hz, x-direction
+! Right PML, Hz
   ii=npml-1
-  do i=Nx+1-npml,Nx-1
+  do i=(Nx-1) - (npml-2),Nx-1
    psi_Hzx_2(ii,j)=bh_x(ii)*psi_Hzx_2(ii,j)+ch_x(ii)*(Ey(i,j)-Ey(i+1,j))/dx
    Hz(i,j)=Hz(i,j)+dt_mu0*psi_Hzx_2(ii,j)
    ii=ii-1
   enddo
  enddo
 
-!  PML for top Hz [top only here! since myrank=(nrpocs-1)], y-direction
+! Top PML, Hz
  do i=1,Nx-1    
   jj=npml-1
-  do j=N_loc+1-npml,N_loc-1
+  do j=(N_loc-1) - (npml-2),N_loc-1
    psi_Hzy_2(i,jj)=bh_y(jj)*psi_Hzy_2(i,jj)+ch_y(jj)*(Ex(i,j+1)-Ex(i,j))/dy
    Hz(i,j)=Hz(i,j)+dt_mu0*psi_Hzy_2(i,jj)
    jj=jj-1
@@ -518,9 +542,9 @@ if(myrank==(nprocs-1))then !rank=(nprocs-1), here PML in y-direction is only app
   Hz_inc(j)=Hz_inc(j)+dt_mu0*(Ex_inc(j+1)-Ex_inc(j))*den_hy(j)
  enddo
 
-!  PML for top Hz [top only here! since myrank=(nrpocs-1)], y-direction
+! Top PML, Hz_inc
  jj=npml-1
- do j=N_loc+1-npml,N_loc-1
+ do j=(N_loc-1) - (npml-2),N_loc-1
   psi_Hzy_2_inc(jj)=bh_y(jj)*psi_Hzy_2_inc(jj)+ch_y(jj)*(Ex_inc(j+1)-Ex_inc(j))/dy
   Hz_inc(j)=Hz_inc(j)+dt_mu0*psi_Hzy_2_inc(jj)
   jj=jj-1
@@ -532,7 +556,7 @@ endif
 !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Ex ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!
 !:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::!
 !:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::!
- do j=1,(nprocs-1) !Hz send/recieve for Ex simple updates
+ do j=1,(nprocs-1) ! Send/Receive Hz
   itag=j
   itag1=j+1
   if(myrank==(j-1))then
@@ -548,14 +572,18 @@ endif
   endif!send_recv
  enddo!nprocs
  
-if(myrank==0)then !rank=0, here PML in y-direction is only applied to the bottom part
+!-----------------------------
+!------------- 0 -------------
+!-----------------------------
+
+if(myrank==0)then
  do i=1,Nx-1
   do j=2,N_loc
    Ex(i,j)=Ex(i,j)+dt_eps0*(Hz(i,j)-Hz(i,j-1))*den_ey(j)
   enddo
  enddo
    
-!  PML for bottom Ex [bottom only here! since myrank=0], y-direction
+! Bottom PML, Ex
  do i=1,Nx-1
   do j=2,npml
    psi_Exy_1(i,j)=be_y(j)*psi_Exy_1(i,j)+ce_y(j)*(Hz(i,j)-Hz(i,j-1))/dy
@@ -568,18 +596,22 @@ if(myrank==0)then !rank=0, here PML in y-direction is only applied to the bottom
   Ex_inc(j)=Ex_inc(j)+dt_eps0*(Hz_inc(j)-Hz_inc(j-1))*den_ey(j)
  enddo
    
-!  PML for bottom Ex [bottom only here! since myrank=0], y-direction
+! Bottom PML, Ex_inc
  do j=2,npml
   psi_Exy_1_inc(j)=be_y(j)*psi_Exy_1_inc(j)+ce_y(j)*(Hz_inc(j)-Hz_inc(j-1))/dy
   Ex_inc(j)=Ex_inc(j)+dt_eps0*psi_Exy_1_inc(j)
  enddo
 endif
 
+!----------------------------------
+!------------ Interior ------------
+!----------------------------------
+
 if((myrank>0).and.(myrank<(nprocs-1)))then !no PML for y-direction here
  do i=1,Nx-1
   j=1
    if(FBx(i,j))then
-     tmpE=C1*Ex(i,j)+C3*(Hz(i,j)-Hz_get(i))*den_ey(j)-C4*PDx(i,j)
+     tmpE=Ca*Ex(i,j)+Cb*(Hz(i,j)-Hz_get(i))*den_ey(j)-Cc*PDx(i,j)
      PDx(i,j)=A1*PDx(i,j)+A2*(tmpE+Ex(i,j))
      Ex(i,j)=tmpE
     else
@@ -588,7 +620,7 @@ if((myrank>0).and.(myrank<(nprocs-1)))then !no PML for y-direction here
   
   do j=2,N_loc
    if(FBx(i,j))then
-     tmpE=C1*Ex(i,j)+C3*(Hz(i,j)-Hz(i,j-1))*den_ey(j)-C4*PDx(i,j)
+     tmpE=Ca*Ex(i,j)+Cb*(Hz(i,j)-Hz(i,j-1))*den_ey(j)-Cc*PDx(i,j)
      PDx(i,j)=A1*PDx(i,j)+A2*(tmpE+Ex(i,j))
      Ex(i,j)=tmpE
     else
@@ -611,14 +643,24 @@ if((myrank>0).and.(myrank<(nprocs-1)))then !no PML for y-direction here
  enddo
 
 ! scattered/total field updates
+ if(myrank==mj0)then
+  do i=i0,i1-1
+   Ex(i,j0)=Ex(i,j0)-dt_eps0*Hz_inc(j0-1)/dy
+  enddo
+ endif
+
  if(myrank==mj1)then
-  do i=1,Nx-1
+  do i=i0,i1-1
    Ex(i,j1)=Ex(i,j1)+dt_eps0*Hz_inc(j1)/dy
   enddo
  endif
 endif
 
-if(myrank==(nprocs-1))then !rank=(nprocs-1), here PML in y-direction is only applied to the top part
+!----------------------------------
+!------------ nprocs-1 ------------
+!----------------------------------
+
+if(myrank==(nprocs-1))then
  j=1
   do i=1,Nx-1
    Ex(i,j)=Ex(i,j)+dt_eps0*(Hz(i,j)-Hz_get(i))*den_ey(j)
@@ -630,10 +672,10 @@ if(myrank==(nprocs-1))then !rank=(nprocs-1), here PML in y-direction is only app
   enddo
  enddo
 
-!  PML for top Ex [top only here! since myrank=(nrpocs-1)], y-direction
+! Top PML, Ex
  do i=1,Nx-1
   jj=npml
-  do j=N_loc+1-npml,N_loc-1
+  do j=(N_loc-1) - (npml-2),N_loc-1
    psi_Exy_2(i,jj)=be_y(jj)*psi_Exy_2(i,jj)+ce_y(jj)*(Hz(i,j)-Hz(i,(j-1)))/dy
    Ex(i,j)=Ex(i,j)+dt_eps0*psi_Exy_2(i,jj)
    jj=jj-1
@@ -648,9 +690,9 @@ if(myrank==(nprocs-1))then !rank=(nprocs-1), here PML in y-direction is only app
   Ex_inc(j)=Ex_inc(j)+dt_eps0*(Hz_inc(j)-Hz_inc(j-1))*den_ey(j)
  enddo
 
-!  PML for top Ex [top only here! since myrank=(nrpocs-1)], y-direction
+! Top PML, Ex_inc
  jj=npml
- do j=N_loc+1-npml,N_loc-1
+ do j=(N_loc-1) - (npml-2),N_loc-1
   psi_Exy_2_inc(jj)=be_y(jj)*psi_Exy_2_inc(jj)+ce_y(jj)*(Hz_inc(j)-Hz_inc(j-1))/dy
   Ex_inc(j)=Ex_inc(j)+dt_eps0*psi_Exy_2_inc(jj)
   jj=jj-1
@@ -664,7 +706,7 @@ endif
 !:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::!
 
 !----------------------------------------
-!-----------0 through nprocs-2-----------
+!---------- 0 through nprocs-2 ----------
 !----------------------------------------
 
 if((myrank>=0).and.(myrank<(nprocs-1)))then
@@ -674,21 +716,21 @@ if((myrank>=0).and.(myrank<(nprocs-1)))then
  i=1
   do j=1,N_loc
    if(FBy(i,j))then
-     tmpE=C1*Ey(i,j)+C3*(Hz(Nx-1,j)-Hz(i,j))*den_ex(i)-C4*PDy(i,j)
+     tmpE=Ca*Ey(i,j)+Cb*(Hz(Nx-1,j)-Hz(i,j))*den_ex(i)-Cc*PDy(i,j)
      PDy(i,j)=A1*PDy(i,j)+A2*(tmpE+Ey(i,j))
      Ey(i,j)=tmpE
 	else
 	 Ey(i,j)=Ey(i,j)+dt_eps0*(Hz(Nx-1,j)-Hz(i,j))*den_ex(i)
    endif
-enddo
+  enddo
 
 !Left Periodicity PML, Ey
 
  do j = 1,N_loc
   if(FBy(i,j))then
    psi_Eyx_1(i,j)=be_x(i)*psi_Eyx_1(i,j)+ce_x(i)*(Hz(Nx-1,j)-Hz(i,j))/dx
-   PDy(i,j) = PDy(i,j) + A2*(C3*psi_Eyx_1(i,j))
-   Ey(i,j) = Ey(i,j) + C3*psi_Eyx_1(i,j)
+   PDy(i,j) = PDy(i,j) + A2*(Cb*psi_Eyx_1(i,j))
+   Ey(i,j) = Ey(i,j) + Cb*psi_Eyx_1(i,j)
   else
    psi_Eyx_1(i,j)=be_x(i)*psi_Eyx_1(i,j)+ce_x(i)*(Hz(Nx-1,j)-Hz(i,j))/dx
    Ey(i,j)=Ey(i,j)+dt_eps0*psi_Eyx_1(i,j)
@@ -700,7 +742,7 @@ enddo
  do i=2,Nx-1
   do j=1,N_loc
    if(FBy(i,j))then
-     tmpE=C1*Ey(i,j)+C3*(Hz(i-1,j)-Hz(i,j))*den_ex(i)-C4*PDy(i,j)
+     tmpE=Ca*Ey(i,j)+Cb*(Hz(i-1,j)-Hz(i,j))*den_ex(i)-Cc*PDy(i,j)
      PDy(i,j)=A1*PDy(i,j)+A2*(tmpE+Ey(i,j))
      Ey(i,j)=tmpE
 	else
@@ -708,15 +750,15 @@ enddo
    endif
   enddo
  enddo
- 
+
 !Left PML, Ey
  
  do j = 1,N_loc
-  do i = 2,npml
+  do i=2,npml
    if(FBy(i,j))then
     psi_Eyx_1(i,j)=be_x(i)*psi_Eyx_1(i,j)+ce_x(i)*(Hz(i-1,j)-Hz(i,j))/dx
-    PDy(i,j) = PDy(i,j) + A2*(C3*psi_Eyx_1(i,j))
-    Ey(i,j) = Ey(i,j) + C3*psi_Eyx_1(i,j)
+    PDy(i,j) = PDy(i,j) + A2*(Cb*psi_Eyx_1(i,j))
+    Ey(i,j) = Ey(i,j) + Cb*psi_Eyx_1(i,j)
    else
     psi_Eyx_1(i,j)=be_x(i)*psi_Eyx_1(i,j)+ce_x(i)*(Hz(i-1,j)-Hz(i,j))/dx
     Ey(i,j)=Ey(i,j)+dt_eps0*psi_Eyx_1(i,j)
@@ -731,8 +773,8 @@ enddo
   do i = (Nx-1)-(npml-2), Nx-1
    if(FBy(i,j))then
     psi_Eyx_2(i,j)=be_x(ii)*psi_Eyx_2(i,j)+ce_x(ii)*(Hz(i-1,j)-Hz(i,j))/dx
-    PDy(i,j) = PDy(i,j) + A2*(C3*psi_Eyx_2(i,j))
-    Ey(i,j) = Ey(i,j) + C3*psi_Eyx_2(i,j)
+    PDy(i,j) = PDy(i,j) + A2*(Cb*psi_Eyx_2(i,j))
+    Ey(i,j) = Ey(i,j) + Cb*psi_Eyx_2(i,j)
    else
     psi_Eyx_2(i,j)=be_x(ii)*psi_Eyx_2(i,j)+ce_x(ii)*(Hz(i-1,j)-Hz(i,j))/dx
     Ey(i,j)=Ey(i,j)+dt_eps0*psi_Eyx_2(i,j)
@@ -740,13 +782,13 @@ enddo
    ii = ii - 1
   enddo
  enddo
-
+ 
 !Right Peridoicity
 
  i=Nx
   do j=1,N_loc
    if(FBy(i,j))then
-     tmpE=C1*Ey(i,j)+C3*(Hz(i-1,j)-Hz(1,j))*den_ex(i)-C4*PDy(i,j)
+     tmpE=Ca*Ey(i,j)+Cb*(Hz(i-1,j)-Hz(1,j))*den_ex(i)-Cc*PDy(i,j)
      PDy(i,j)=A1*PDy(i,j)+A2*(tmpE+Ey(i,j))
      Ey(i,j)=tmpE
 	else
@@ -760,79 +802,62 @@ enddo
  do j = 1,N_loc
   if(FBy(i,j))then
    psi_Eyx_2(i,j)=be_x(ii)*psi_Eyx_2(i,j)+ce_x(ii)*(Hz(i-1,j)-Hz(1,j))/dx
-   PDy(i,j) = PDy(i,j) + A2*(C3*psi_Eyx_2(i,j))
-   Ey(i,j) = Ey(i,j) + C3*psi_Eyx_2(i,j)
+   PDy(i,j) = PDy(i,j) + A2*(Cb*psi_Eyx_2(i,j))
+   Ey(i,j) = Ey(i,j) + Cb*psi_Eyx_2(i,j)
   else
    psi_Eyx_2(i,j)=be_x(ii)*psi_Eyx_2(i,j)+ce_x(ii)*(Hz(i-1,j)-Hz(1,j))/dx
    Ey(i,j)=Ey(i,j)+dt_eps0*psi_Eyx_2(i,j)
   endif
  enddo
- 
+
+! scattered/total field updates
+ if(myrank==mj0)then
+  do j=j0,N_loc
+   Ey(i0,j)=Ey(i0,j)+dt_eps0*Hz_inc(j)/dy
+   Ey(i1,j)=Ey(i1,j)-dt_eps0*Hz_inc(j)/dy
+  enddo
+ endif
+
+ if((myrank>mj0).and.(myrank<mj1))then
+  do j=1,N_loc
+   Ey(i0,j)=Ey(i0,j)+dt_eps0*Hz_inc(j)/dy
+   Ey(i1,j)=Ey(i1,j)-dt_eps0*Hz_inc(j)/dy
+  enddo
+ endif
+
+ if(myrank==mj1)then
+  do j=1,j1-1
+   Ey(i0,j)=Ey(i0,j)+dt_eps0*Hz_inc(j)/dy
+   Ey(i1,j)=Ey(i1,j)-dt_eps0*Hz_inc(j)/dy
+  enddo
+ endif
 endif
 
-!---------------------------------------
-!---------------nprocs-1----------------
-!---------------------------------------
+!----------------------------------
+!------------ nprocs-1 ------------
+!----------------------------------
 
 if(myrank==(nprocs-1))then
-
-!Left Periodicity
-
- i=1
- do j=1,N_loc-1
-  Ey(i,j)=Ey(i,j)+dt_eps0*(Hz(Nx-1,j)-Hz(i,j))*den_ex(i)
- enddo
-
-!Left Periodicity PML, Ey
-
- do j = 1,N_loc-1
-  psi_Eyx_1(i,j)=be_x(i)*psi_Eyx_1(i,j)+ce_x(i)*(Hz(Nx-1,j)-Hz(i,j))/dx
-  Ey(i,j)=Ey(i,j)+dt_eps0*psi_Eyx_1(i,j)
- enddo
-
-!Interior Update
-
  do i=2,Nx-1
   do j=1,N_loc-1
-   Ey(i,j)=Ey(i,j)+dt_eps0*(Hz(i-1,j)-Hz(i,j))*den_ex(i)
+   Ey(i,j)=Ey(i,j)+dt_eps0*((Hz(i-1,j)-Hz(i,j))*den_ex(i))
   enddo
  enddo
- 
- !Left PML, Ey
- 
- do j = 1,N_loc-1
-  do i = 2,npml
+
+ do j=1,N_loc-1
+! Left PML, Ey
+  do i=2,npml
    psi_Eyx_1(i,j)=be_x(i)*psi_Eyx_1(i,j)+ce_x(i)*(Hz(i-1,j)-Hz(i,j))/dx
    Ey(i,j)=Ey(i,j)+dt_eps0*psi_Eyx_1(i,j)
   enddo
- enddo
- 
-!Right PML, Ey
-
- do j = 1,N_loc-1
-  ii = npml
-  do i = (Nx-1)-(npml-2), Nx-1
-   psi_Eyx_2(i,j)=be_x(ii)*psi_Eyx_2(i,j)+ce_x(ii)*(Hz(i-1,j)-Hz(i,j))/dx
-   Ey(i,j)=Ey(i,j)+dt_eps0*psi_Eyx_2(i,j)
-   ii = ii - 1
+! Right PML, Ey
+  ii=npml
+  do i=(Nx-1) - (npml-2),Nx-1
+   psi_Eyx_2(ii,j)=be_x(ii)*psi_Eyx_2(ii,j)+ce_x(ii)*(Hz(i-1,j)-Hz(i,j))/dx
+   Ey(i,j)=Ey(i,j)+dt_eps0*psi_Eyx_2(ii,j)
+   ii=ii-1
   enddo
  enddo
-
-!Right Peridoicity
-
- i=Nx
-  do j=1,N_loc-1
-   Ey(i,j)=Ey(i,j)+dt_eps0*(Hz(i-1,j)-Hz(1,j))*den_ex(i)
-  enddo
-  
-!Right Periodicity PML, Ey
-
- ii = 1
- do j = 1,N_loc-1
-  psi_Eyx_2(i,j)=be_x(ii)*psi_Eyx_2(i,j)+ce_x(ii)*(Hz(i-1,j)-Hz(1,j))/dx
-  Ey(i,j)=Ey(i,j)+dt_eps0*psi_Eyx_2(i,j)
- enddo
- 
 endif
 
 
@@ -936,7 +961,7 @@ if(myrank==mwR)then
   P_inc(nn)=dreal(sum_int)
  enddo
 
- open(file='R_2D_slits-ADE_Drude-R_83nm-t_150nm-period_300nm.dat',unit=32)
+ open(file='R_2D_1slit-ADE_Drude-R_83nm-t_150nm-length_200nm.dat',unit=32)
  do nn=1,N_w
   write(32,*) omega_P(nn)/ev_to_radsec,abs(P_sct(nn)/P_inc(nn))
  enddo
@@ -983,7 +1008,7 @@ if(myrank==mwT)then
   P_inc(nn)=dreal(sum_int)
  enddo
 
- open(file='T_2D_slits-ADE_Drude-R_83nm-t_150nm-period_300nm.dat',unit=32)
+ open(file='T_2D_1slit-ADE_Drude-R_83nm-t_150nm-length_200nm.dat',unit=32)
  do nn=1,N_w
   write(32,*) omega_P(nn)/ev_to_radsec,abs(P_sct(nn)/P_inc(nn))
  enddo
