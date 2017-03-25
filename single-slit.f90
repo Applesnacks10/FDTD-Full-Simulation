@@ -18,8 +18,8 @@ double precision, parameter :: omega_min=ev_to_radsec*1.5,omega_max=ev_to_radsec
 integer, parameter :: Ny=1281,N_loc=40
 double precision, parameter :: y0=-640.0D-9,yM=640.0D-9
 
-integer, parameter :: Nx=301
-double precision, parameter :: x0=-150.0e-9,xM=150.0e-9
+integer, parameter :: Nx=101
+double precision, parameter :: x0=-50.0e-9,xM=50.0e-9
 
 !
 !~~~ CPML ~~~!
@@ -210,6 +210,7 @@ do i=1,Nx
     ((yM2(j)>z1).and.(yM2(j)<z2).and.(x(i)>R)) &
      )then
     FBy(i,j)=.true.
+    Drude_Grid(i,j*
    else
     FBy(i,j)=.false.
   endif
