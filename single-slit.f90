@@ -104,7 +104,7 @@ double precision, parameter :: z1=-75.2525D-9,z2=75.2525d-9
 !~~~ Grid Return ~~~!
 !
 
-integer :: Drude_Grid(Nx-1,Ny), FB_Grid(Nx-1,N_loc), a, mReturn
+integer :: Drude_Grid(Nx-1,Ny), FB_Grid(Nx-1,N_loc), a, mReturn, ago
 
 !
 !~~~ EM field components ~~~!
@@ -231,14 +231,17 @@ enddo
 !-----------------------------------
 
 mReturn = nprocs-1
+!ago = 1
 
 itag = nprocs + 1
 do a = 0,nprocs-1
  itag = itag + 1
  if(myrank == a.and.a /= mReturn)then
   call MPI_Send(FB_Grid(1,1), (Nx-1)*N_loc, MPI_Integer, mReturn, itag, MPI_COMM_WORLD,ierr)
+!  call MPI_Recv(ago,1,MPI_Integer, mReturn, itag + nprocs + 1, MPI_COMM_WORLD,istatus,ierr) !Create a blocking signal
  elseif(myrank == mReturn .and. a /= mReturn)then
-  call MPI_Recv(Drude_Grid(1,a*N_loc+1), (Nx-1)*N_loc, MPI_INTEGER, a-1, itag, MPI_COMM_WORLD,istatus,ierr)
+  call MPI_Recv(Drude_Grid(1,a*N_loc+1), (Nx-1)*N_loc, MPI_INTEGER, a, itag, MPI_COMM_WORLD,istatus,ierr)
+!  call MPI_Send(ago,1,MPI_Integer, a, itag + nprocs + 1, MPI_COMM_WORLD,ierr) !Send the signal to move on
  endif
 enddo
 
