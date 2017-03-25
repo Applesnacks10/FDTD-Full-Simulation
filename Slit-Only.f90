@@ -18,8 +18,8 @@ double precision, parameter :: omega_min=ev_to_radsec*1.5,omega_max=ev_to_radsec
 integer, parameter :: Ny=1281,N_loc=40
 double precision, parameter :: y0=-640.0D-9,yM=640.0D-9
 
-integer, parameter :: Nx=301
-double precision, parameter :: x0=-150.0e-9,xM=150.0e-9
+integer, parameter :: Nx=1001
+double precision, parameter :: x0=-500.0e-9,xM=500.0e-9
 
 !
 !~~~ CPML ~~~!
@@ -58,7 +58,9 @@ double precision tmp1,tmp2,omega_P(N_w),SN(N_w,2)
 !
 double precision tmp
 
-integer, parameter :: iw1=i0,iw2=i1
+integer, parameter :: iw1 = 650, iw2 = 850
+!iw1= floor((Nx-1)/2+(floor(d_half)-100.0D9)/dx
+!iw2= iw1 + 200.0D9/dx 
 integer, parameter :: mwR=30,jwR=31  !<--- + 590nm
 integer, parameter :: mwT=1,jwT=21   !<--- - 580nm
 
@@ -96,27 +98,23 @@ double precision PDx(Nx-1,N_loc),PDy(Nx,N_loc)
 
 logical FBx(Nx-1,N_loc),FBy(Nx,N_loc)
 
-double precision, parameter :: R=83.2525D-9
-double precision, parameter :: z1=-75.2525D-9,z2=75.2525d-9
-!double precision, parameter :: slit_length=200.2525d-9 !should be < 2*x(i1)
-
 !
 !~~~ Geometry ~~~!
 !
 
 double precision, parameter :: d_half =  250.2525D-9
-double precision, parameter :: Ag1 = 0.2525D-9, Ag2 = 400.2525D-9
-double precision, parameter :; groove_depth = 100D-9, slit_depth = 400D-9
-double precision, parameter :: groove_d1 = Ag1, groove_d2 = groove_d1 + groove_depth
-double precision, parameter :: groove_w1 = -1.0*d_half - groove_width/2.0, groove_w1 = -1.0*dhalf + groove_width/2.0
-double precision, parameter :: slit_d1 = Ag1, slit_d2 = slit_d1 + slit_depth
-double precision, parameter :: slit_w1 = 1.0*d_half - slit_width/2.0, slit_w1 = 1.0*dhalf + groove_width/2.0
+double precision, parameter :: Ag1 = 0.2525D-9, Ag2 = 500.2525D-9
+double precision, parameter :: groove_depth = 100D-9, slit_depth = 400D-9
+double precision, parameter :: groove_width = 100D-9, slit_width = 100D-9
+
+double precision :: groove_d1, groove_d2, groove_w1, groove_w2
+double precision :: slit_d1, slit_d2, slit_w1, slit_w2
 
 !
 !~~~ Grid Return ~~~!
 !
 
-integer :: Drude_Grid(Nx-1,Ny), FB_Grid(Nx-1,N_loc), a, mReturn,
+integer :: Drude_Grid(Nx-1,Ny), FB_Grid(Nx-1,N_loc), a, mReturn
 
 !
 !~~~ EM field components ~~~!
@@ -206,7 +204,7 @@ FBy=.false.
 groove_d1 = Ag1
 groove_d2 = groove_d1 + groove_depth
 groove_w1 = -1.0*d_half - groove_width/2.0
-groove_w2 = -1.0*dhalf + groove_width/2.0
+groove_w2 = -1.0*d_half + groove_width/2.0
 slit_d1 = Ag1
 slit_d2 = slit_d1 + slit_depth
 slit_w1 = 1.0*d_half - slit_width/2.0
@@ -214,27 +212,33 @@ slit_w2 = 1.0*d_half + slit_width/2.0
 
 do i=1,Nx-1
  do j=1,N_loc
-  if( &
-    ((y(j)>z1).and.(y(j)<z2).and.(xM2(i)<(-R))).or. &
-    ((y(j)>z1).and.(y(j)<z2).and.(xM2(i)>R)) &
-     )then
-    FBx(i,j)=.true.
-   else
-    FBx(i,j)=.false.
+ 
+  if( y(j) >= Ag1 .and. y(j) <= Ag2 )then ! True in the metal zone
+   FBx(i,j) = .true.
   endif
+  if( y(j) <= groove_d2 .and. xM2(i) >= groove_w1 .and. xM2(i) <= groove_w2)then ! False in the groove
+   FBx(i,j) = .false.
+  endif
+  if( y(j) <= slit_d2 .and. xM2(i) >= slit_w1 .and. xM2(i) <= slit_w2)then ! False in the slit
+   FBx(i,j) = .false.
+  endif 
+
  enddo
 enddo
 
 do i=1,Nx
  do j=1,N_loc
-  if( &
-    ((yM2(j)>z1).and.(yM2(j)<z2).and.(x(i)<(-R))).or. &
-    ((yM2(j)>z1).and.(yM2(j)<z2).and.(x(i)>R)) &
-     )then
-    FBy(i,j)=.true.
-   else
-    FBy(i,j)=.false.
+
+  if( yM2(j) >= Ag1 .and. yM2(j) <= Ag2 )then ! True in the metal zone
+   FBy(i,j) = .true.
   endif
+  if( yM2(j) <= groove_d2 .and. x(i) >= groove_w1 .and. x(i) <= groove_w2)then ! False in the groove
+   FBy(i,j) = .false.
+  endif
+  if( yM2(j) <= slit_d2 .and. x(i) >= slit_w1 .and. x(i) <= slit_w2)then ! False in the slit
+   FBy(i,j) = .false.
+  endif 
+
  enddo
 enddo
 
