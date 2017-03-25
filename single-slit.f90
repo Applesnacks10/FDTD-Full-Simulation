@@ -104,7 +104,7 @@ double precision, parameter :: z1=-75.2525D-9,z2=75.2525d-9
 !~~~ Grid Return ~~~!
 !
 
-integer :: Drude_Grid(Nx-1,Ny), FB_Grid(Nx-1,N_loc), a
+integer :: Drude_Grid(Nx-1,Ny), FB_Grid(Nx-1,N_loc), a, mReturn
 
 !
 !~~~ EM field components ~~~!
@@ -210,7 +210,6 @@ do i=1,Nx
     ((yM2(j)>z1).and.(yM2(j)<z2).and.(x(i)>R)) &
      )then
     FBy(i,j)=.true.
-    Drude_Grid(i,j*
    else
     FBy(i,j)=.false.
   endif
@@ -231,17 +230,19 @@ enddo
 !----------- Grid Return -----------
 !-----------------------------------
 
+mReturn = nprocs-1
+
 itag = nprocs + 1
 do a = 0,nprocs-1
  itag = itag + 1
- if(myrank == a.and.a /= nprocs/2)then
-  call MPI_Send(FB_Grid(1,1), (Nx-1)*N_loc, MPI_Integer, nprocs/2, itag, MPI_COMM_WORLD,ierr)
- elseif(myrank == nprocs/2 .and. a /= nprocs/2)then
+ if(myrank == a.and.a /= mReturn)then
+  call MPI_Send(FB_Grid(1,1), (Nx-1)*N_loc, MPI_Integer, mReturn, itag, MPI_COMM_WORLD,ierr)
+ elseif(myrank == mReturn .and. a /= mReturn)then
   call MPI_Recv(Drude_Grid(1,a*N_loc+1), (Nx-1)*N_loc, MPI_INTEGER, a-1, itag, MPI_COMM_WORLD,istatus,ierr)
  endif
 enddo
 
-if(myrank == nprocs/2)then
+if(myrank == mReturn)then
  open(file='Drude_Grid.dat',unit=42)
   write(42,*) Drude_Grid
  close(unit=42)
