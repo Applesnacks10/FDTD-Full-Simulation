@@ -101,10 +101,22 @@ double precision, parameter :: z1=-75.2525D-9,z2=75.2525d-9
 !double precision, parameter :: slit_length=200.2525d-9 !should be < 2*x(i1)
 
 !
+!~~~ Geometry ~~~!
+!
+
+double precision, parameter :: d_half =  250.2525D-9
+double precision, parameter :: Ag1 = 0.2525D-9, Ag2 = 400.2525D-9
+double precision, parameter :; groove_depth = 100D-9, slit_depth = 400D-9
+double precision, parameter :: groove_d1 = Ag1, groove_d2 = groove_d1 + groove_depth
+double precision, parameter :: groove_w1 = -1.0*d_half - groove_width/2.0, groove_w1 = -1.0*dhalf + groove_width/2.0
+double precision, parameter :: slit_d1 = Ag1, slit_d2 = slit_d1 + slit_depth
+double precision, parameter :: slit_w1 = 1.0*d_half - slit_width/2.0, slit_w1 = 1.0*dhalf + groove_width/2.0
+
+!
 !~~~ Grid Return ~~~!
 !
 
-integer :: Drude_Grid(Nx-1,Ny), FB_Grid(Nx-1,N_loc), a, mReturn, ago
+integer :: Drude_Grid(Nx-1,Ny), FB_Grid(Nx-1,N_loc), a, mReturn,
 
 !
 !~~~ EM field components ~~~!
@@ -190,6 +202,16 @@ FBx=.false.
 FBy=.false.
 
 !~~~ structure ~~~!
+
+groove_d1 = Ag1
+groove_d2 = groove_d1 + groove_depth
+groove_w1 = -1.0*d_half - groove_width/2.0
+groove_w2 = -1.0*dhalf + groove_width/2.0
+slit_d1 = Ag1
+slit_d2 = slit_d1 + slit_depth
+slit_w1 = 1.0*d_half - slit_width/2.0
+slit_w2 = 1.0*d_half + slit_width/2.0
+
 do i=1,Nx-1
  do j=1,N_loc
   if( &
@@ -230,18 +252,15 @@ enddo
 !----------- Grid Return -----------
 !-----------------------------------
 
-mReturn = nprocs-1
-!ago = 1
+mReturn = nprocs/2
 
 itag = nprocs + 1
 do a = 0,nprocs-1
  itag = itag + 1
  if(myrank == a.and.a /= mReturn)then
   call MPI_Send(FB_Grid(1,1), (Nx-1)*N_loc, MPI_Integer, mReturn, itag, MPI_COMM_WORLD,ierr)
-!  call MPI_Recv(ago,1,MPI_Integer, mReturn, itag + nprocs + 1, MPI_COMM_WORLD,istatus,ierr) !Create a blocking signal
  elseif(myrank == mReturn .and. a /= mReturn)then
   call MPI_Recv(Drude_Grid(1,a*N_loc+1), (Nx-1)*N_loc, MPI_INTEGER, a, itag, MPI_COMM_WORLD,istatus,ierr)
-!  call MPI_Send(ago,1,MPI_Integer, a, itag + nprocs + 1, MPI_COMM_WORLD,ierr) !Send the signal to move on
  endif
 enddo
 
@@ -995,8 +1014,6 @@ if(myrank==mwT)then
  enddo
  close(unit=32)
 endif
-
-write(*,*) myrank
 
 !---------------------------------------------------------------------!
  call MPI_FINALIZE(ierr)
