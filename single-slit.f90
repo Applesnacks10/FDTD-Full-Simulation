@@ -12,14 +12,14 @@ double precision, parameter :: ev_to_radsec=2.0*pi*2.4180e14
 !
 !~~~ number of grid points & time steps ~~~!
 !
-integer, parameter :: Nt=200000,N_w=400
+integer, parameter :: Nt=2,N_w=400
 double precision, parameter :: omega_min=ev_to_radsec*1.5,omega_max=ev_to_radsec*4.0
 
 integer, parameter :: Ny=1281,N_loc=40
 double precision, parameter :: y0=-640.0D-9,yM=640.0D-9
 
-integer, parameter :: Nx=30001
-double precision, parameter :: x0=-15000.0e-9,xM=15000.0e-9
+integer, parameter :: Nx=301
+double precision, parameter :: x0=-150.0e-9,xM=150.0e-9
 
 !
 !~~~ CPML ~~~!
@@ -99,6 +99,12 @@ logical FBx(Nx-1,N_loc),FBy(Nx,N_loc)
 double precision, parameter :: R=83.2525D-9
 double precision, parameter :: z1=-75.2525D-9,z2=75.2525d-9
 !double precision, parameter :: slit_length=200.2525d-9 !should be < 2*x(i1)
+
+!
+!~~~ Grid Return ~~~!
+!
+
+integer :: Drude_Grid(Nx-1,Ny), FB_Grid(Nx-1,N_loc), a
 
 !
 !~~~ EM field components ~~~!
@@ -209,6 +215,36 @@ do i=1,Nx
   endif
  enddo
 enddo
+
+do j = 1,N_loc
+ do i = 1,Nx
+  if(FBx(i,j))then
+   FB_Grid(i,j) = 1
+  else
+   FB_Grid(i,j) = 0
+  endif
+ enddo
+enddo
+
+!-----------------------------------
+!----------- Grid Return -----------
+!-----------------------------------
+
+itag = nprocs + 1
+do a = 0,nprocs-1
+ itag = itag + 1
+ if(myrank == a.and.a /= nprocs/2)then
+  call MPI_Send(FB_Grid(1,1), (Nx-1)*N_loc, MPI_Integer, itag, MPI_COMM_WORLD,ierr)
+ elseif(myrank == nprocs/2 .and. a /= nprocs/2)then
+  call MPI_Recv(Drude_Grid(1,a*N_loc+1), (Nx-1)*N_loc, MPI_INTEGER, a-1, itag, MPI_COMM_WORLD,istatus,ierr)
+ endif
+enddo
+
+if(myrank == nprocs/2)then
+ open(file='Drude_Grid.dat',unit=42)
+  write(42,*) Drude_Grid
+ close(unit=42)
+endif
 
 !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!
          !~~~ CPML vectors ~~~!
