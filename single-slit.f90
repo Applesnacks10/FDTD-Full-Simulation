@@ -234,7 +234,7 @@ itag = nprocs + 1
 do a = 0,nprocs-1
  itag = itag + 1
  if(myrank == a.and.a /= nprocs/2)then
-  call MPI_Send(FB_Grid(1,1), (Nx-1)*N_loc, MPI_Integer, itag, MPI_COMM_WORLD,ierr)
+  call MPI_Send(FB_Grid(1,1), (Nx-1)*N_loc, MPI_Integer, nprocs/2, itag, MPI_COMM_WORLD,ierr)
  elseif(myrank == nprocs/2 .and. a /= nprocs/2)then
   call MPI_Recv(Drude_Grid(1,a*N_loc+1), (Nx-1)*N_loc, MPI_INTEGER, a-1, itag, MPI_COMM_WORLD,istatus,ierr)
  endif
