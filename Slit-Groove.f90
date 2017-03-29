@@ -12,14 +12,14 @@ double precision, parameter :: ev_to_radsec=2.0*pi*2.4180e14
 !
 !~~~ number of grid points & time steps ~~~!
 !
-integer, parameter :: Nt=2,N_w=400
+integer, parameter :: Nt=200000,N_w=400
 double precision, parameter :: omega_min=ev_to_radsec*1.5,omega_max=ev_to_radsec*4.0
 
 integer, parameter :: Ny=1281,N_loc=40
 double precision, parameter :: y0=-640.0D-9,yM=640.0D-9
 
-integer, parameter :: Nx=1001
-double precision, parameter :: x0=-500.0e-9,xM=500.0e-9
+integer, parameter :: Nx=3001
+double precision, parameter :: x0=-1500.0e-9,xM=1500.0e-9
 
 !
 !~~~ CPML ~~~!
@@ -88,7 +88,7 @@ logical FBx(Nx-1,N_loc),FBy(Nx,N_loc)
 !
 
 double precision, parameter :: d_half =  100.0D-9
-double precision, parameter :: Ag1 = -200.0D-9, Ag2 = 200.0D-9
+double precision, parameter :: Ag1 = -199.757575D-9, Ag2 = 200.252525D-9
 double precision, parameter :: groove_depth = 100.0D-9, slit_depth = 400.0D-9
 double precision, parameter :: groove_width = 100.0D-9, slit_width = 100.0D-9
 
@@ -220,7 +220,7 @@ do i=1,Nx-1
   if( y(j) >= groove_d2 .and. xM2(i) >= groove_w1 .and. xM2(i) <= groove_w2)then ! False in the groove
    FBx(i,j) = .false.
   endif
-  if( y(j) >= slit_d2 .and. xM2(i) >= slit_w1 .and. xM2(i) <= slit_w2)then ! False in the slit
+  if( xM2(i) >= slit_w1 .and. xM2(i) <= slit_w2)then ! False in the slit
    FBx(i,j) = .false.
   endif 
 
@@ -236,7 +236,7 @@ do i=1,Nx
   if( yM2(j) >= groove_d2 .and. x(i) >= groove_w1 .and. x(i) <= groove_w2)then ! False in the groove
    FBy(i,j) = .false.
   endif
-  if( yM2(j) >= slit_d2 .and. x(i) >= slit_w1 .and. x(i) <= slit_w2)then ! False in the slit
+  if( x(i) >= slit_w1 .and. x(i) <= slit_w2)then ! False in the slit
    FBy(i,j) = .false.
   endif 
 
@@ -260,31 +260,31 @@ jwT = 1 + (real((ywT + (yM-y0)/2)/dx/N_loc) - floor((ywT + (yM-y0)/2)/dx/N_loc))
 !----------- Grid Return -----------
 !-----------------------------------
 
-mReturn = nprocs/2
-
-itag = nprocs + 1
-do a = 0,nprocs-1
- itag = itag + 1
- if(myrank == a.and.a /= mReturn)then
-  call MPI_Send(FB_Grid(1,1), (Nx-1)*N_loc, MPI_Integer, mReturn, itag, MPI_COMM_WORLD,ierr)
- elseif(myrank == mReturn .and. a /= mReturn)then
-  call MPI_Recv(Drude_Grid(1,a*N_loc+1), (Nx-1)*N_loc, MPI_INTEGER, a, itag, MPI_COMM_WORLD,istatus,ierr)
- endif
-enddo
-
-if(myrank == mReturn)then
- do j = 1,N_loc
-  do i = 1,Nx
-   Drude_Grid(i,mReturn*N_loc+j) = FB_Grid(i,j)
-  enddo
- enddo
-endif
-
-if(myrank == mReturn)then
- open(file='Drude_Grid.dat',unit=42)
-  write(42,*) Drude_Grid
- close(unit=42)
-endif
+!mReturn = nprocs/2
+!
+!itag = nprocs + 1
+!do a = 0,nprocs-1
+! itag = itag + 1
+! if(myrank == a.and.a /= mReturn)then
+!  call MPI_Send(FB_Grid(1,1), (Nx-1)*N_loc, MPI_Integer, mReturn, itag, MPI_COMM_WORLD,ierr)
+! elseif(myrank == mReturn .and. a /= mReturn)then
+!  call MPI_Recv(Drude_Grid(1,a*N_loc+1), (Nx-1)*N_loc, MPI_INTEGER, a, itag, MPI_COMM_WORLD,istatus,ierr)
+! endif
+!enddo
+!
+!if(myrank == mReturn)then
+! do j = 1,N_loc
+!  do i = 1,Nx
+!   Drude_Grid(i,mReturn*N_loc+j) = FB_Grid(i,j)
+!  enddo
+! enddo
+!endif
+!
+!if(myrank == mReturn)then
+! open(file='Drude_Grid.dat',unit=42)
+!  write(42,*) Drude_Grid
+! close(unit=42)
+!endif
 
 !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!
          !~~~ CPML vectors ~~~!
