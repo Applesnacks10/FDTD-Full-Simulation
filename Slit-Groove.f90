@@ -273,6 +273,14 @@ do a = 0,nprocs-1
 enddo
 
 if(myrank == mReturn)then
+ do j = 1,N_loc
+  do i = 1,Nx
+   Drude_Grid(i,j) = FB_Grid(i,j)
+  enddo
+ enddo
+endif
+
+if(myrank == mReturn)then
  open(file='Drude_Grid.dat',unit=42)
   write(42,*) Drude_Grid
  close(unit=42)
