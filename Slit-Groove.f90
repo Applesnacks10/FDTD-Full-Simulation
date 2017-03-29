@@ -945,8 +945,8 @@ if(myrank==mwT)then
     Ex_temp_inc(i,nn,1)=Ex_temp_inc(i,nn,1)+tmp1*Ex_inc(j)
     Ex_temp_inc(i,nn,2)=Ex_temp_inc(i,nn,2)+tmp2*Ex_inc(j)
   
-    Hz_temp_inc(i,nn,1)=Hz_temp_inc(i,nn,1)+tmp1*(Hz_inc_get+Hz_inc(j))/2.0
-    Hz_temp_inc(i,nn,2)=Hz_temp_inc(i,nn,2)+tmp2*(Hz_inc_get+Hz_inc(j))/2.0
+    Hz_temp_inc(i,nn,1)=Hz_temp_inc(i,nn,1)+tmp1*(Hz_get_inc+Hz_inc(j))/2.0
+    Hz_temp_inc(i,nn,2)=Hz_temp_inc(i,nn,2)+tmp2*(Hz_get_inc+Hz_inc(j))/2.0
    enddo
   enddo
  endif
