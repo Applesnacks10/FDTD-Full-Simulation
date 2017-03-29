@@ -87,10 +87,10 @@ logical FBx(Nx-1,N_loc),FBy(Nx,N_loc)
 !~~~ Geometry ~~~!
 !
 
-double precision, parameter :: d_half =  100.2525D-9
-double precision, parameter :: Ag1 = -200.2525D-9, Ag2 = 200.2525D-9
-double precision, parameter :: groove_depth = 100D-9, slit_depth = 400D-9
-double precision, parameter :: groove_width = 100D-9, slit_width = 100D-9
+double precision, parameter :: d_half =  100.0D-9
+double precision, parameter :: Ag1 = -200.0D-9, Ag2 = 200.0D-9
+double precision, parameter :: groove_depth = 100.0D-9, slit_depth = 400.0D-9
+double precision, parameter :: groove_width = 100.0D-9, slit_width = 100.0D-9
 
 double precision :: groove_d1, groove_d2, groove_w1, groove_w2
 double precision :: slit_d1, slit_d2, slit_w1, slit_w2
