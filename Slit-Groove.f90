@@ -53,22 +53,7 @@ double precision, parameter :: tau=0.36d-15,E0=1.0,omega=ev_to_radsec*3.0
 double precision aBH(4)
 double precision pulse(Nt)
 double precision tmp1,tmp2,omega_P(N_w),SN(N_w,2)
-!
-!~~~ detection ~~~!
-!
-double precision tmp
 
-integer, parameter :: iw1 = 650, iw2 = 850
-!iw1= floor((Nx-1)/2+(floor(d_half)-100.0D9)/dx
-!iw2= iw1 + 200.0D9/dx 
-integer, parameter :: mwR=30,jwR=31  !<--- + 590nm
-integer, parameter :: mwT=1,jwT=21   !<--- - 580nm
-
-double precision Ex_temp(iw1:iw2,N_w,2),Hz_temp(iw1:iw2,N_w,2)
-double precision Ex_temp_inc(iw1:iw2,N_w,2),Hz_temp_inc(iw1:iw2,N_w,2)
-double precision Ex_w,Hz_w,av_x1,av_x2,av_y
-double complex sum_int,cTMP1,cTMP2
-double precision P_sct(N_w),P_inc(N_w)
 !
 !~~~ physical grid ~~~!
 !
@@ -102,13 +87,29 @@ logical FBx(Nx-1,N_loc),FBy(Nx,N_loc)
 !~~~ Geometry ~~~!
 !
 
-double precision, parameter :: d_half =  250.2525D-9
-double precision, parameter :: Ag1 = 0.2525D-9, Ag2 = 500.2525D-9
+double precision, parameter :: d_half =  100.2525D-9
+double precision, parameter :: Ag1 = -200.2525D-9, Ag2 = 200.2525D-9
 double precision, parameter :: groove_depth = 100D-9, slit_depth = 400D-9
 double precision, parameter :: groove_width = 100D-9, slit_width = 100D-9
 
 double precision :: groove_d1, groove_d2, groove_w1, groove_w2
 double precision :: slit_d1, slit_d2, slit_w1, slit_w2
+
+!
+!~~~ detection ~~~!
+!
+double precision tmp
+
+integer, parameter :: iw1 = (Nx-1)/2+(d_half-100.0D-9)/dx
+integer, parameter :: iw2 = iw1 + 200.0D-9/dx
+double precision, parameter :: ywT = Ag2 - slit_depth - 400.0D-9 ! slit_d2 - 400nm
+integer :: mwT, jwT
+
+double precision Ex_temp(iw1:iw2,N_w,2),Hz_temp(iw1:iw2,N_w,2)
+double precision Ex_temp_inc(iw1:iw2,N_w,2),Hz_temp_inc(iw1:iw2,N_w,2)
+double precision Ex_w,Hz_w,av_x1,av_x2,av_y
+double complex sum_int,cTMP1,cTMP2
+double precision P_sct(N_w),P_inc(N_w)
 
 !
 !~~~ Grid Return ~~~!
@@ -201,12 +202,12 @@ FBy=.false.
 
 !~~~ structure ~~~!
 
-groove_d1 = Ag1
-groove_d2 = groove_d1 + groove_depth
+groove_d1 = Ag2
+groove_d2 = groove_d1 - groove_depth
 groove_w1 = -1.0*d_half - groove_width/2.0
 groove_w2 = -1.0*d_half + groove_width/2.0
-slit_d1 = Ag1
-slit_d2 = slit_d1 + slit_depth
+slit_d1 = Ag2
+slit_d2 = slit_d1 - slit_depth
 slit_w1 = 1.0*d_half - slit_width/2.0
 slit_w2 = 1.0*d_half + slit_width/2.0
 
@@ -216,10 +217,10 @@ do i=1,Nx-1
   if( y(j) >= Ag1 .and. y(j) <= Ag2 )then ! True in the metal zone
    FBx(i,j) = .true.
   endif
-  if( y(j) <= groove_d2 .and. xM2(i) >= groove_w1 .and. xM2(i) <= groove_w2)then ! False in the groove
+  if( y(j) >= groove_d2 .and. xM2(i) >= groove_w1 .and. xM2(i) <= groove_w2)then ! False in the groove
    FBx(i,j) = .false.
   endif
-  if( y(j) <= slit_d2 .and. xM2(i) >= slit_w1 .and. xM2(i) <= slit_w2)then ! False in the slit
+  if( y(j) >= slit_d2 .and. xM2(i) >= slit_w1 .and. xM2(i) <= slit_w2)then ! False in the slit
    FBx(i,j) = .false.
   endif 
 
@@ -232,10 +233,10 @@ do i=1,Nx
   if( yM2(j) >= Ag1 .and. yM2(j) <= Ag2 )then ! True in the metal zone
    FBy(i,j) = .true.
   endif
-  if( yM2(j) <= groove_d2 .and. x(i) >= groove_w1 .and. x(i) <= groove_w2)then ! False in the groove
+  if( yM2(j) >= groove_d2 .and. x(i) >= groove_w1 .and. x(i) <= groove_w2)then ! False in the groove
    FBy(i,j) = .false.
   endif
-  if( yM2(j) <= slit_d2 .and. x(i) >= slit_w1 .and. x(i) <= slit_w2)then ! False in the slit
+  if( yM2(j) >= slit_d2 .and. x(i) >= slit_w1 .and. x(i) <= slit_w2)then ! False in the slit
    FBy(i,j) = .false.
   endif 
 
@@ -251,6 +252,9 @@ do j = 1,N_loc
   endif
  enddo
 enddo
+
+mwT = floor((ywT + (yM-y0)/2)/dx/N_loc) !floor(j_glob/N_loc)
+jwT = (real((ywT + (yM-y0)/2)/dx/N_loc) - floor((ywT + (yM-y0)/2)/dx/N_loc))*N_loc !remainder(j_glob/N_loc)*N_loc
 
 !-----------------------------------
 !----------- Grid Return -----------
@@ -433,6 +437,10 @@ Hz_temp_inc=0.0
 
 if(myrank==mwT)then
  call cpu_time(cpu1)
+ write(*,*) 'iw1 =', iw1
+ write(*,*) 'iw2 =', iw2
+ write(*,*) 'mwT =', mwT
+ write(*,*) 'jwT =', jwT
 endif
 
 do n=1,Nt
@@ -872,27 +880,27 @@ endif
 !--------------------------------------------------------------------------!
 !~~~~~~~~~~~~~~~~~~~~~~~~==========================~~~~~~~~~~~~~~~~~~~~~~~~!
 !--------------------------------------------------------------------------!
-if(myrank==mwR)then
- j=jwR
- 
- do nn=1,N_w
-  tmp1=sin(omega_P(nn)*dt*dble(n))
-  tmp2=cos(omega_P(nn)*dt*dble(n))
-  do i=iw1,iw2
-   Ex_temp(i,nn,1)=Ex_temp(i,nn,1)+tmp1*(Ex(i-1,j)+Ex(i,j))/2.0
-   Ex_temp(i,nn,2)=Ex_temp(i,nn,2)+tmp2*(Ex(i-1,j)+Ex(i,j))/2.0
-  
-   Hz_temp(i,nn,1)=Hz_temp(i,nn,1)+tmp1*(Hz(i-1,j)+Hz(i,j)+Hz(i-1,j-1)+Hz(i,j-1))/4.0
-   Hz_temp(i,nn,2)=Hz_temp(i,nn,2)+tmp2*(Hz(i-1,j)+Hz(i,j)+Hz(i-1,j-1)+Hz(i,j-1))/4.0
-
-   Ex_temp_inc(i,nn,1)=Ex_temp_inc(i,nn,1)+tmp1*Ex_inc(j)
-   Ex_temp_inc(i,nn,2)=Ex_temp_inc(i,nn,2)+tmp2*Ex_inc(j)
-  
-   Hz_temp_inc(i,nn,1)=Hz_temp_inc(i,nn,1)+tmp1*(Hz_inc(j-1)+Hz_inc(j))/2.0
-   Hz_temp_inc(i,nn,2)=Hz_temp_inc(i,nn,2)+tmp2*(Hz_inc(j-1)+Hz_inc(j))/2.0
-  enddo
- enddo
-endif
+!if(myrank==mwR)then
+! j=jwR
+! 
+! do nn=1,N_w
+!  tmp1=sin(omega_P(nn)*dt*dble(n))
+!  tmp2=cos(omega_P(nn)*dt*dble(n))
+!  do i=iw1,iw2
+!   Ex_temp(i,nn,1)=Ex_temp(i,nn,1)+tmp1*(Ex(i-1,j)+Ex(i,j))/2.0
+!   Ex_temp(i,nn,2)=Ex_temp(i,nn,2)+tmp2*(Ex(i-1,j)+Ex(i,j))/2.0
+!  
+!   Hz_temp(i,nn,1)=Hz_temp(i,nn,1)+tmp1*(Hz(i-1,j)+Hz(i,j)+Hz(i-1,j-1)+Hz(i,j-1))/4.0
+!   Hz_temp(i,nn,2)=Hz_temp(i,nn,2)+tmp2*(Hz(i-1,j)+Hz(i,j)+Hz(i-1,j-1)+Hz(i,j-1))/4.0
+!
+!   Ex_temp_inc(i,nn,1)=Ex_temp_inc(i,nn,1)+tmp1*Ex_inc(j)
+!   Ex_temp_inc(i,nn,2)=Ex_temp_inc(i,nn,2)+tmp2*Ex_inc(j)
+!  
+!   Hz_temp_inc(i,nn,1)=Hz_temp_inc(i,nn,1)+tmp1*(Hz_inc(j-1)+Hz_inc(j))/2.0
+!   Hz_temp_inc(i,nn,2)=Hz_temp_inc(i,nn,2)+tmp2*(Hz_inc(j-1)+Hz_inc(j))/2.0
+!  enddo
+! enddo
+!endif
 
 if(myrank==mwT)then
  j=jwT
@@ -925,52 +933,52 @@ endif
 
 enddo !Nt
 
-if(myrank==mwR)then
- do nn=1,N_w
-  do i=iw1,iw2
-   tmp2=sqrt(Ex_temp(i,nn,1)**2+Ex_temp(i,nn,2)**2)/SN(nn,1)
-   Ex_temp(i,nn,2)=-atan2(Ex_temp(i,nn,1),Ex_temp(i,nn,2))-SN(nn,2)
-   Ex_temp(i,nn,1)=tmp2
-    
-   tmp2=sqrt(Hz_temp(i,nn,1)**2+Hz_temp(i,nn,2)**2)/SN(nn,1)
-   Hz_temp(i,nn,2)=-atan2(Hz_temp(i,nn,1),Hz_temp(i,nn,2))-SN(nn,2)
-   Hz_temp(i,nn,1)=tmp2
-  enddo
-  
-  sum_int=(0.0D0,0.0D0)
-  do i=iw1,iw2
-   cTMP1=Ex_temp(i,nn,1)*exp(-Im*Ex_temp(i,nn,2))
-   cTMP2=Hz_temp(i,nn,1)*exp(-Im*Hz_temp(i,nn,2))
-   sum_int=sum_int+cTMP1*conjg(cTMP2)
-  enddo
-  P_sct(nn)=dreal(sum_int)
-
-
-  do i=iw1,iw2
-   tmp2=sqrt(Ex_temp_inc(i,nn,1)**2+Ex_temp_inc(i,nn,2)**2)/SN(nn,1)
-   Ex_temp_inc(i,nn,2)=-atan2(Ex_temp_inc(i,nn,1),Ex_temp_inc(i,nn,2))-SN(nn,2)
-   Ex_temp_inc(i,nn,1)=tmp2
-    
-   tmp2=sqrt(Hz_temp_inc(i,nn,1)**2+Hz_temp_inc(i,nn,2)**2)/SN(nn,1)
-   Hz_temp_inc(i,nn,2)=-atan2(Hz_temp_inc(i,nn,1),Hz_temp_inc(i,nn,2))-SN(nn,2)
-   Hz_temp_inc(i,nn,1)=tmp2
-  enddo
-  
-  sum_int=(0.0D0,0.0D0)
-  do i=iw1,iw2
-   cTMP1=Ex_temp_inc(i,nn,1)*exp(-Im*Ex_temp_inc(i,nn,2))
-   cTMP2=Hz_temp_inc(i,nn,1)*exp(-Im*Hz_temp_inc(i,nn,2))
-   sum_int=sum_int+cTMP1*conjg(cTMP2)
-  enddo
-  P_inc(nn)=dreal(sum_int)
- enddo
-
- open(file='R_2D_1slit-ADE_Drude-R_83nm-t_150nm-length_200nm.dat',unit=32)
- do nn=1,N_w
-  write(32,*) omega_P(nn)/ev_to_radsec,abs(P_sct(nn)/P_inc(nn))
- enddo
- close(unit=32)
-endif
+!if(myrank==mwR)then
+! do nn=1,N_w
+!  do i=iw1,iw2
+!   tmp2=sqrt(Ex_temp(i,nn,1)**2+Ex_temp(i,nn,2)**2)/SN(nn,1)
+!   Ex_temp(i,nn,2)=-atan2(Ex_temp(i,nn,1),Ex_temp(i,nn,2))-SN(nn,2)
+!   Ex_temp(i,nn,1)=tmp2
+!    
+!   tmp2=sqrt(Hz_temp(i,nn,1)**2+Hz_temp(i,nn,2)**2)/SN(nn,1)
+!   Hz_temp(i,nn,2)=-atan2(Hz_temp(i,nn,1),Hz_temp(i,nn,2))-SN(nn,2)
+!   Hz_temp(i,nn,1)=tmp2
+!  enddo
+!  
+!  sum_int=(0.0D0,0.0D0)
+!  do i=iw1,iw2
+!   cTMP1=Ex_temp(i,nn,1)*exp(-Im*Ex_temp(i,nn,2))
+!   cTMP2=Hz_temp(i,nn,1)*exp(-Im*Hz_temp(i,nn,2))
+!   sum_int=sum_int+cTMP1*conjg(cTMP2)
+!  enddo
+!  P_sct(nn)=dreal(sum_int)
+!
+!
+!  do i=iw1,iw2
+!   tmp2=sqrt(Ex_temp_inc(i,nn,1)**2+Ex_temp_inc(i,nn,2)**2)/SN(nn,1)
+!   Ex_temp_inc(i,nn,2)=-atan2(Ex_temp_inc(i,nn,1),Ex_temp_inc(i,nn,2))-SN(nn,2)
+!   Ex_temp_inc(i,nn,1)=tmp2
+!    
+!   tmp2=sqrt(Hz_temp_inc(i,nn,1)**2+Hz_temp_inc(i,nn,2)**2)/SN(nn,1)
+!   Hz_temp_inc(i,nn,2)=-atan2(Hz_temp_inc(i,nn,1),Hz_temp_inc(i,nn,2))-SN(nn,2)
+!   Hz_temp_inc(i,nn,1)=tmp2
+!  enddo
+!  
+!  sum_int=(0.0D0,0.0D0)
+!  do i=iw1,iw2
+!   cTMP1=Ex_temp_inc(i,nn,1)*exp(-Im*Ex_temp_inc(i,nn,2))
+!   cTMP2=Hz_temp_inc(i,nn,1)*exp(-Im*Hz_temp_inc(i,nn,2))
+!   sum_int=sum_int+cTMP1*conjg(cTMP2)
+!  enddo
+!  P_inc(nn)=dreal(sum_int)
+! enddo
+!
+! open(file='R_2D_1slit-ADE_Drude-R_83nm-t_150nm-length_200nm.dat',unit=32)
+! do nn=1,N_w
+!  write(32,*) omega_P(nn)/ev_to_radsec,abs(P_sct(nn)/P_inc(nn))
+! enddo
+! close(unit=32)
+!endif
 
 if(myrank==mwT)then
  do nn=1,N_w
