@@ -904,25 +904,45 @@ endif
 
 if(myrank==mwT)then
  j=jwT
- 
- do nn=1,N_w
-  tmp1=sin(omega_P(nn)*dt*dble(n))
-  tmp2=cos(omega_P(nn)*dt*dble(n))
-  do i=iw1,iw2
-   Ex_temp(i,nn,1)=Ex_temp(i,nn,1)+tmp1*(Ex(i-1,j)+Ex(i,j))/2.0
-   Ex_temp(i,nn,2)=Ex_temp(i,nn,2)+tmp2*(Ex(i-1,j)+Ex(i,j))/2.0
-  
-   Hz_temp(i,nn,1)=Hz_temp(i,nn,1)+tmp1*(Hz(i-1,j)+Hz(i,j)+Hz(i-1,j-1)+Hz(i,j-1))/4.0
-   Hz_temp(i,nn,2)=Hz_temp(i,nn,2)+tmp2*(Hz(i-1,j)+Hz(i,j)+Hz(i-1,j-1)+Hz(i,j-1))/4.0
 
-   Ex_temp_inc(i,nn,1)=Ex_temp_inc(i,nn,1)+tmp1*Ex_inc(j)
-   Ex_temp_inc(i,nn,2)=Ex_temp_inc(i,nn,2)+tmp2*Ex_inc(j)
+ if(jwT /= 1)then
+  do nn=1,N_w
+   tmp1=sin(omega_P(nn)*dt*dble(n))
+   tmp2=cos(omega_P(nn)*dt*dble(n))
+   do i=iw1,iw2
+    Ex_temp(i,nn,1)=Ex_temp(i,nn,1)+tmp1*(Ex(i-1,j)+Ex(i,j))/2.0
+    Ex_temp(i,nn,2)=Ex_temp(i,nn,2)+tmp2*(Ex(i-1,j)+Ex(i,j))/2.0
   
-   Hz_temp_inc(i,nn,1)=Hz_temp_inc(i,nn,1)+tmp1*(Hz_inc(j-1)+Hz_inc(j))/2.0
-   Hz_temp_inc(i,nn,2)=Hz_temp_inc(i,nn,2)+tmp2*(Hz_inc(j-1)+Hz_inc(j))/2.0
+    Hz_temp(i,nn,1)=Hz_temp(i,nn,1)+tmp1*(Hz(i-1,j)+Hz(i,j)+Hz(i-1,j-1)+Hz(i,j-1))/4.0
+    Hz_temp(i,nn,2)=Hz_temp(i,nn,2)+tmp2*(Hz(i-1,j)+Hz(i,j)+Hz(i-1,j-1)+Hz(i,j-1))/4.0
+
+    Ex_temp_inc(i,nn,1)=Ex_temp_inc(i,nn,1)+tmp1*Ex_inc(j)
+    Ex_temp_inc(i,nn,2)=Ex_temp_inc(i,nn,2)+tmp2*Ex_inc(j)
+  
+    Hz_temp_inc(i,nn,1)=Hz_temp_inc(i,nn,1)+tmp1*(Hz_inc(j-1)+Hz_inc(j))/2.0
+    Hz_temp_inc(i,nn,2)=Hz_temp_inc(i,nn,2)+tmp2*(Hz_inc(j-1)+Hz_inc(j))/2.0
+   enddo
   enddo
- enddo
+ else
+  do nn=1,N_w
+   tmp1=sin(omega_P(nn)*dt*dble(n))
+   tmp2=cos(omega_P(nn)*dt*dble(n))
+   do i=iw1,iw2
+    Ex_temp(i,nn,1)=Ex_temp(i,nn,1)+tmp1*(Ex(i-1,j)+Ex(i,j))/2.0
+    Ex_temp(i,nn,2)=Ex_temp(i,nn,2)+tmp2*(Ex(i-1,j)+Ex(i,j))/2.0
+  
+    Hz_temp(i,nn,1)=Hz_temp(i,nn,1)+tmp1*(Hz(i-1,j)+Hz(i,j)+Hz_get(i-1)+Hz_get(i))/4.0
+    Hz_temp(i,nn,2)=Hz_temp(i,nn,2)+tmp2*(Hz(i-1,j)+Hz(i,j)+Hz_get(i-1)+Hz_get(i))/4.0
 
+    Ex_temp_inc(i,nn,1)=Ex_temp_inc(i,nn,1)+tmp1*Ex_inc(j)
+    Ex_temp_inc(i,nn,2)=Ex_temp_inc(i,nn,2)+tmp2*Ex_inc(j)
+  
+    Hz_temp_inc(i,nn,1)=Hz_temp_inc(i,nn,1)+tmp1*(Hz_inc_get+Hz_inc(j))/2.0
+    Hz_temp_inc(i,nn,2)=Hz_temp_inc(i,nn,2)+tmp2*(Hz_inc_get+Hz_inc(j))/2.0
+   enddo
+  enddo
+ endif
+  
    if(mod(n,10000)==0)then
 		call cpu_time(cpu2)
 		write(*,*) 'cpu time [total hours]',(cpu2-cpu1)*(Nt/10000)/3600
