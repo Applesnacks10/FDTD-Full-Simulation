@@ -44,8 +44,8 @@ double precision psi_Hzy_2_inc(npml-1),psi_Exy_2_inc(npml)
 !~~~ scattered field zone ~~~!
 !
 integer, parameter :: i0 = 1 + (npml), i1 = Nx - (npml)
-integer, parameter :: mj0=1,j0=11   !<--- - 590nm
-integer, parameter :: mj1=28,j1=21  !<--- + 500nm
+integer, parameter :: mj0=1,j0=11  !<--- - 590nm
+integer, parameter :: mj1=28,j1=21 !<--- + 500nm
 
 integer, parameter :: ms=29,js=21
 
@@ -100,7 +100,7 @@ double precision :: slit_d1, slit_d2, slit_w1, slit_w2
 !
 double precision tmp
 
-integer, parameter :: iw1 = (Nx-1)/2+(d_half-100.0D-9)/dx
+integer, parameter :: iw1 = (Nx+1)/2+(d_half-100.0D-9)/dx
 integer, parameter :: iw2 = iw1 + 200.0D-9/dx
 double precision, parameter :: ywT = Ag2 - slit_depth - 400.0D-9 ! slit_d2 - 400nm
 integer :: mwT, jwT
@@ -254,7 +254,7 @@ do j = 1,N_loc
 enddo
 
 mwT = floor((ywT + (yM-y0)/2)/dx/N_loc) !floor(j_glob/N_loc)
-jwT = (real((ywT + (yM-y0)/2)/dx/N_loc) - floor((ywT + (yM-y0)/2)/dx/N_loc))*N_loc !remainder(j_glob/N_loc)*N_loc
+jwT = 1 + (real((ywT + (yM-y0)/2)/dx/N_loc) - floor((ywT + (yM-y0)/2)/dx/N_loc))*N_loc !remainder(j_glob/N_loc)*N_loc
 
 !-----------------------------------
 !----------- Grid Return -----------
