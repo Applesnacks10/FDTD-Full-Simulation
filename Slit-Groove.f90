@@ -204,12 +204,12 @@ FBy=.false.
 
 groove_d1 = Ag2
 groove_d2 = groove_d1 - groove_depth
-groove_w1 = -1.0*d_half - groove_width/2.0
-groove_w2 = -1.0*d_half + groove_width/2.0
+groove_w1 = -1.0*d_half - (groove_width+0.252525*dx)/2.0
+groove_w2 = -1.0*d_half + (groove_width+0.252525*dx)/2.0
 slit_d1 = Ag2
 slit_d2 = slit_d1 - slit_depth
-slit_w1 = 1.0*d_half - slit_width/2.0
-slit_w2 = 1.0*d_half + slit_width/2.0
+slit_w1 = 1.0*d_half - (slit_width+0.252525*dx)/2.0
+slit_w2 = 1.0*d_half + (slit_width+0.252525*dx)/2.0
 
 do i=1,Nx-1
  do j=1,N_loc
