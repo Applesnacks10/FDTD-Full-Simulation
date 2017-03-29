@@ -275,7 +275,7 @@ enddo
 if(myrank == mReturn)then
  do j = 1,N_loc
   do i = 1,Nx
-   Drude_Grid(i,m_return*N_loc+j) = FB_Grid(i,j)
+   Drude_Grid(i,mReturn*N_loc+j) = FB_Grid(i,j)
   enddo
  enddo
 endif
