@@ -101,7 +101,7 @@ double precision :: slit_d1, slit_d2, slit_w1, slit_w2
 double precision tmp
 
 integer, parameter :: iw1 = (Nx+1)/2+(d_half-100.0D-9)/dx
-integer, parameter :: iw2 = iw1 + 200.0D-9/dx
+integer, parameter :: iw2 = iw1 + 200.252525D-9/dx
 double precision, parameter :: ywT = Ag2 - slit_depth - 400.0D-9 ! slit_d2 - 400nm
 integer :: mwT, jwT
 
