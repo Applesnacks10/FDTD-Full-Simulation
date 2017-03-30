@@ -18,8 +18,8 @@ double precision, parameter :: omega_min=ev_to_radsec*1.5,omega_max=ev_to_radsec
 integer, parameter :: Ny=1281,N_loc=40
 double precision, parameter :: y0=-640.0D-9,yM=640.0D-9
 
-integer, parameter :: Nx=3001
-double precision, parameter :: x0=-1500.0e-9,xM=1500.0e-9
+integer, parameter :: Nx=30001
+double precision, parameter :: x0=-15000.0e-9,xM=15000.0e-9
 
 !
 !~~~ CPML ~~~!
