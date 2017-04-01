@@ -103,7 +103,7 @@ logical FBx(Nx-1,N_loc),FBy(Nx,N_loc)
 !~~~ Geometry ~~~!
 !
 
-double precision, parameter :: d_half =  100.0D-9
+double precision, parameter :: d_half =  250.0D-9
 double precision, parameter :: Ag1 = -199.757575D-9, Ag2 = 200.252525D-9
 double precision, parameter :: groove_depth = 100.0D-9, slit_depth = 400.0D-9
 double precision, parameter :: groove_width = 100.0D-9, slit_width = 100.0D-9
@@ -131,7 +131,7 @@ double precision P_sct(N_w),P_inc(N_w)
 !~~~ Grid Return ~~~!
 !
 
-integer :: Drude_Grid(Nx-1,Ny), FB_Grid(Nx-1,N_loc), a, mReturn
+integer :: Drude_Grid(Nx-1,Ny), FB_Grid(Nx-1,N_loc), f, mReturn
 
 !
 !~~~ EM field components ~~~!
@@ -141,7 +141,7 @@ double precision Ex_inc(N_loc),Hz_inc(N_loc)
 !
 !~~~ other parameters and variables ~~~!
 !
-integer i,ii,j,jj,n,nn,k
+integer i,ii,j,jj,n,nn,k,a,b
 double precision t
 double precision, parameter :: dt_eps0=dt/eps0,dt_mu0=dt/mu0
 
@@ -149,7 +149,11 @@ double precision, parameter :: dt_eps0=dt/eps0,dt_mu0=dt/mu0
 !~~~ Filename ~~~!
 !
 
- character(len = 100) :: filename, str_d, str_s-g, str_s-o
+ character(len = 2), parameter :: prefix = 'T_'
+ character(len = 4), parameter :: suffix = '.dat'
+ character(len = 11), parameter :: str_slit_groove = 'slit-groove'
+ character(len = 9), parameter :: str_slit_only = 'slit-only'
+ character(len = 50) filename, str_d
 
 !
 !~~~ MPI part ~~~!
@@ -318,12 +322,12 @@ jwT = 1 + (real((ywT + (yM-y0)/2)/dx/N_loc) - floor((ywT + (yM-y0)/2)/dx/N_loc))
 !mReturn = nprocs/2
 !
 !itag = nprocs + 1
-!do a = 0,nprocs-1
+!do f = 0,nprocs-1
 ! itag = itag + 1
-! if(myrank == a.and.a /= mReturn)then
+! if(myrank == f.and.f /= mReturn)then
 !  call MPI_Send(FB_Grid(1,1), (Nx-1)*N_loc, MPI_Integer, mReturn, itag, MPI_COMM_WORLD,ierr)
-! elseif(myrank == mReturn .and. a /= mReturn)then
-!  call MPI_Recv(Drude_Grid(1,a*N_loc+1), (Nx-1)*N_loc, MPI_INTEGER, a, itag, MPI_COMM_WORLD,istatus,ierr)
+! elseif(myrank == mReturn .and. f /= mReturn)then
+!  call MPI_Recv(Drude_Grid(1,f*N_loc+1), (Nx-1)*N_loc, MPI_INTEGER, f, itag, MPI_COMM_WORLD,istatus,ierr)
 ! endif
 !enddo
 !
@@ -1103,8 +1107,10 @@ if(myrank==mwT)then
   P_inc(nn)=dreal(sum_int)
  enddo
 
-
- open(file='T_slit-groove_d-100nm.dat',unit=32)
+ write(str_d,*) int(floor(d_half*2*1.0D9))
+ str_d = trim(adjustl(str_d))
+ 
+ open(file=filename,unit=32)
  do nn=1,N_w
   write(32,*) omega_P(nn)/ev_to_radsec,abs(P_sct(nn)/P_inc(nn))
  enddo
