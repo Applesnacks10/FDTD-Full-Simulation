@@ -12,7 +12,7 @@ double precision, parameter :: ev_to_radsec=2.0*pi*2.4180e14
 !
 !~~~ number of grid points & time steps ~~~!
 !
-integer, parameter :: Nt=200000
+integer, parameter :: Nt=3500
 
 integer, parameter :: Ny=1281,N_loc=40
 double precision, parameter :: y0=-640.0D-9,yM=640.0D-9
@@ -144,6 +144,13 @@ double precision Ex_inc(N_loc),Hz_inc(N_loc)
 integer i,ii,j,jj,n,nn,k
 double precision t
 double precision, parameter :: dt_eps0=dt/eps0,dt_mu0=dt/mu0
+
+!
+!~~~ Filename ~~~!
+!
+
+ character(len = 100) :: filename, str_d, str_s-g, str_s-o
+
 !
 !~~~ MPI part ~~~!
 !
@@ -1096,7 +1103,8 @@ if(myrank==mwT)then
   P_inc(nn)=dreal(sum_int)
  enddo
 
- open(file='T_2D_1slit-ADE_Drude-R_83nm-t_150nm-length_200nm.dat',unit=32)
+
+ open(file='T_slit-groove_d-100nm.dat',unit=32)
  do nn=1,N_w
   write(32,*) omega_P(nn)/ev_to_radsec,abs(P_sct(nn)/P_inc(nn))
  enddo
