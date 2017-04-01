@@ -1107,8 +1107,8 @@ if(myrank==mwT)then
   P_inc(nn)=dreal(sum_int)
  enddo
 
- write(str_d,*) int(floor(d_half*2*1.0D9))
- str_d = trim(adjustl(str_d))
+ write(str_d,*) floor(d_half*2*1.0D9))
+ str_d = adjustl(str_d))
  filename = adjustl('T_'//str_slit_groove//'_d-'//str_d//'nm.dat')
  
  open(file=filename,unit=32)
