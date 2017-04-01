@@ -12,7 +12,7 @@ double precision, parameter :: ev_to_radsec=2.0*pi*2.4180e14
 !
 !~~~ number of grid points & time steps ~~~!
 !
-integer, parameter :: Nt=3500
+integer, parameter :: Nt=1
 
 integer, parameter :: Ny=1281,N_loc=40
 double precision, parameter :: y0=-640.0D-9,yM=640.0D-9
@@ -154,7 +154,7 @@ double precision, parameter :: dt_eps0=dt/eps0,dt_mu0=dt/mu0
  character(len = 11), parameter :: str_slit_groove = 'slit-groove'
  character(len = 9), parameter :: str_slit_only = 'slit-only'
  character(len = 100) filename
- character(len = 3) str_d
+ character(len = 10) str_d
 
 !
 !~~~ MPI part ~~~!
