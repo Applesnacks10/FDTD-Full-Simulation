@@ -153,7 +153,7 @@ double precision, parameter :: dt_eps0=dt/eps0,dt_mu0=dt/mu0
  character(len = 4), parameter :: suffix = '.dat'
  character(len = 11), parameter :: str_slit_groove = 'slit-groove'
  character(len = 9), parameter :: str_slit_only = 'slit-only'
- character(len = 50) filename, str_d
+ character(len = 1024) filename, str_d
 
 !
 !~~~ MPI part ~~~!
@@ -1109,6 +1109,7 @@ if(myrank==mwT)then
 
  write(str_d,*) int(floor(d_half*2*1.0D9))
  str_d = trim(adjustl(str_d))
+ filename = adjustl('T_'//str_slit_groove//'_d-'//str_d//'nm.dat')
  
  open(file=filename,unit=32)
  do nn=1,N_w
