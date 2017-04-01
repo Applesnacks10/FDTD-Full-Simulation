@@ -1108,7 +1108,7 @@ if(myrank==mwT)then
  enddo
 
  write(str_d,*) int(floor(d_half*2*1.0D9))
- str_d = adjustl(str_d)
+ str_d = adjustl(str_d//'apple')
  filename = adjustl('T_'//str_slit_groove//'_d-'//str_d)
  filename = adjustl(filename//'nm.dat')
  
