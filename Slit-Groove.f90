@@ -14,7 +14,7 @@ double precision, parameter :: ev_to_radsec=2.0*pi*2.4180e14
 !
 integer, parameter :: Nt=3500
 
-integer, parameter :: Ny=1281,N_loc=40
+integer, parameter :: Ny=1281,N_loc=20
 double precision, parameter :: y0=-640.0D-9,yM=640.0D-9
 
 integer, parameter :: Nx=3001
@@ -43,10 +43,10 @@ double precision psi_Hzy_2_inc(npml-1),psi_Exy_2_inc(npml)
 !~~~ scattered field zone ~~~!
 !
 integer, parameter :: i0 = 1 + (npml), i1 = Nx - (npml)
-integer, parameter :: mj0=1,j0=11  !<--- - 590nm
-integer, parameter :: mj1=28,j1=21 !<--- + 500nm
+integer, parameter :: mj0=1*2+1,j0=(11-1)*2+1  !<--- - 590nm
+integer, parameter :: mj1=28*2+2,j1=(21-1)*2+1!<--- + 500nm
 
-integer, parameter :: ms=29,js=21
+integer, parameter :: ms=29*2+2,js=(21-1)*2+1
 
 !
 !~~~ Gaussian Source ~~~!
