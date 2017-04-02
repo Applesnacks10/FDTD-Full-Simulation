@@ -43,8 +43,8 @@ double precision psi_Hzy_2_inc(npml-1),psi_Exy_2_inc(npml)
 !~~~ scattered field zone ~~~!
 !
 integer, parameter :: i0 = 1 + (npml), i1 = Nx - (npml)
-integer, parameter :: mj0=1*2+1,j0=modulo((11-1)*2,N_loc)+1  !<--- - 590nm
-integer, parameter :: mj1=28*2+2,j1=modulo((21-1)*2,N_loc)+1!<--- + 500nm
+integer, parameter :: mj0=1*2+1,j0=1  !<--- - 590nm
+integer, parameter :: mj1=28*2+2,j1=1!<--- + 500nm
 
 integer, parameter :: ms=29*2+2,js=(21-1)*2+1
 
