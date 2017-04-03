@@ -48,27 +48,27 @@ integer, parameter :: mj1=28*2+1,j1=11!<--- + 510nm
 
 integer, parameter :: ms=29*2+1,js=11
 
+!!
+!!~~~ Gaussian Source ~~~!
+!!
 !
-!~~~ Gaussian Source ~~~!
-!
-
-integer, parameter :: N_w = 400
-double precision, parameter :: omega_min=ev_to_radsec*1.5,omega_max=ev_to_radsec*4.0
-double precision, parameter :: tau=0.36d-15,E0=1.0,omega=ev_to_radsec*3.0
-double precision aBH(4)
-double precision pulse(Nt)
-double precision tmp1,tmp2,omega_P(N_w),SN(N_w,2)
-
-!
-!~~~ Monotone Source ~~~!
-!
-
-!integer, parameter :: N_w = 1
-!double precision, parameter :: wavelength = 852.0D-9 
-!double precision, parameter :: omega = 2*pi*c/wavelength
-!double precision, parameter :: omega_min = omega, omega_max = omega
+!integer, parameter :: N_w = 400
+!double precision, parameter :: omega_min=ev_to_radsec*1.5,omega_max=ev_to_radsec*4.0
+!double precision, parameter :: tau=0.36d-15,E0=1.0,omega=ev_to_radsec*3.0
+!double precision aBH(4)
 !double precision pulse(Nt)
 !double precision tmp1,tmp2,omega_P(N_w),SN(N_w,2)
+
+
+~~~ Monotone Source ~~~!
+
+
+integer, parameter :: N_w = 1
+double precision, parameter :: wavelength = 852.0D-9 
+double precision, parameter :: omega = 2*pi*c/wavelength
+double precision, parameter :: omega_min = omega, omega_max = omega
+double precision pulse(Nt)
+double precision tmp1,tmp2,omega_P(N_w),SN(N_w,2)
 
 !
 !~~~ physical grid ~~~!
@@ -172,60 +172,32 @@ double precision Hz_send_inc,Hz_get_inc
  call MPI_COMM_SIZE(MPI_COMM_WORLD,nprocs,ierr)
  call MPI_COMM_RANK(MPI_COMM_WORLD,myrank,ierr)
 
-!---------------------------
-!----- Gaussian Source -----
-!---------------------------
-
-do nn=1,N_w
- omega_P(nn)=omega_min+(omega_max-omega_min)*(nn-1)/(N_w-1)
-enddo
-
-aBH(1)=0.353222222
-aBH(2)=-0.488
-aBH(3)=0.145
-aBH(4)=-0.010222222
-
-pulse=0.0
-SN=0.0
-do n=1,Nt
- t=dt*dble(n)
- if(t<=tau)then
-   pulse(n)=E0*cos(omega*t)*( &
-                 aBH(1)+ &
-				 aBH(2)*cos(2.0*pi*t/tau)+ &
-				 aBH(3)*cos(2.0*pi*2.0*t/tau)+ &
-				 aBH(4)*cos(2.0*pi*3.0*t/tau))
-  else
-   pulse(n)=0.0
- endif
-
- do nn=1,N_w
-  tmp1=sin(omega_P(nn)*t)
-  tmp2=cos(omega_P(nn)*t)
-  SN(nn,1)=SN(nn,1)+pulse(n)*tmp1
-  SN(nn,2)=SN(nn,2)+pulse(n)*tmp2
- enddo
-enddo
-
-do nn=1,N_w
- tmp1=sqrt(SN(nn,1)**2+SN(nn,2)**2)
- SN(nn,2)=-atan2(SN(nn,1),SN(nn,2))
- SN(nn,1)=tmp1
-enddo
-
 !!---------------------------
-!!----- Monotone Source -----
+!!----- Gaussian Source -----
 !!---------------------------
 !
 !do nn=1,N_w
 ! omega_P(nn)=omega_min+(omega_max-omega_min)*(nn-1)/(N_w-1)
 !enddo
 !
+!aBH(1)=0.353222222
+!aBH(2)=-0.488
+!aBH(3)=0.145
+!aBH(4)=-0.010222222
+!
 !pulse=0.0
 !SN=0.0
 !do n=1,Nt
 ! t=dt*dble(n)
-!   pulse(n)=E0*sin(omega*t)
+! if(t<=tau)then
+!   pulse(n)=E0*cos(omega*t)*( &
+!                 aBH(1)+ &
+!				 aBH(2)*cos(2.0*pi*t/tau)+ &
+!				 aBH(3)*cos(2.0*pi*2.0*t/tau)+ &
+!				 aBH(4)*cos(2.0*pi*3.0*t/tau))
+!  else
+!   pulse(n)=0.0
+! endif
 !
 ! do nn=1,N_w
 !  tmp1=sin(omega_P(nn)*t)
@@ -240,6 +212,34 @@ enddo
 ! SN(nn,2)=-atan2(SN(nn,1),SN(nn,2))
 ! SN(nn,1)=tmp1
 !enddo
+
+!---------------------------
+!----- Monotone Source -----
+!---------------------------
+
+do nn=1,N_w
+ omega_P(nn)=omega_min+(omega_max-omega_min)*(nn-1)/(N_w-1)
+enddo
+
+pulse=0.0
+SN=0.0
+do n=1,Nt
+ t=dt*dble(n)
+   pulse(n)=E0*sin(omega*t)
+
+ do nn=1,N_w
+  tmp1=sin(omega_P(nn)*t)
+  tmp2=cos(omega_P(nn)*t)
+  SN(nn,1)=SN(nn,1)+pulse(n)*tmp1
+  SN(nn,2)=SN(nn,2)+pulse(n)*tmp2
+ enddo
+enddo
+
+do nn=1,N_w
+ tmp1=sqrt(SN(nn,1)**2+SN(nn,2)**2)
+ SN(nn,2)=-atan2(SN(nn,1),SN(nn,2))
+ SN(nn,1)=tmp1
+enddo
 
 !~~~ grid ~~~!
 do i=1,Nx
