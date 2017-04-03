@@ -23,7 +23,7 @@ double precision, parameter :: x0=-1500.0e-9,xM=1500.0e-9
 !
 !~~~ CPML ~~~!
 !
-integer, parameter :: npml=19,m=3,ma=1 
+integer, parameter :: npml=15,m=3,ma=1 
 double precision sigmaCPML,alphaCPML,kappaCPML
 double precision psi_Hzy_1(Nx-1,npml-1),psi_Exy_1(Nx-1,npml)                              
 double precision psi_Hzy_2(Nx-1,npml-1),psi_Exy_2(Nx-1,npml)
