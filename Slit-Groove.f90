@@ -12,7 +12,7 @@ double precision, parameter :: ev_to_radsec=2.0*pi*2.4180e14
 !
 !~~~ number of grid points & time steps ~~~!
 !
-integer, parameter :: Nt=35000
+integer, parameter :: Nt=3500
 
 integer, parameter :: Ny=1281,N_loc=20
 double precision, parameter :: y0=-640.0D-9,yM=640.0D-9
@@ -23,7 +23,7 @@ double precision, parameter :: x0=-1500.0e-9,xM=1500.0e-9
 !
 !~~~ CPML ~~~!
 !
-integer, parameter :: npml=15,m=3,ma=1 
+integer, parameter :: npml=19,m=3,ma=1 
 double precision sigmaCPML,alphaCPML,kappaCPML
 double precision psi_Hzy_1(Nx-1,npml-1),psi_Exy_1(Nx-1,npml)                              
 double precision psi_Hzy_2(Nx-1,npml-1),psi_Exy_2(Nx-1,npml)
@@ -44,7 +44,6 @@ double precision psi_Hzy_2_inc(npml-1),psi_Exy_2_inc(npml)
 !
 integer, parameter :: i0 = 1 + (npml), i1 = Nx - (npml)
 integer :: mj0, j0
-!integer, parameter :: mj0=1*2,j0=11  !<--- - 590nm
 integer, parameter :: mj1=28*2+1,j1=11!<--- + 510nm
 
 integer, parameter :: ms=29*2+1,js=11
