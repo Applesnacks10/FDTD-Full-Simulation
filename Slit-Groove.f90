@@ -43,7 +43,8 @@ double precision psi_Hzy_2_inc(npml-1),psi_Exy_2_inc(npml)
 !~~~ scattered field zone ~~~!
 !
 integer, parameter :: i0 = 1 + (npml), i1 = Nx - (npml)
-integer, parameter :: mj0=1*2,j0=11  !<--- - 590nm
+integer :: mj0, j0
+!integer, parameter :: mj0=1*2,j0=11  !<--- - 590nm
 integer, parameter :: mj1=28*2+1,j1=1!<--- + 500nm
 
 integer, parameter :: ms=29*2+1,js=1
@@ -104,7 +105,7 @@ logical FBx(Nx-1,N_loc),FBy(Nx,N_loc)
 !
 
 double precision, parameter :: d_half =  250.0D-9
-double precision, parameter :: Ag1 = -199.757575D-9, Ag2 = 200.252525D-9
+double precision, parameter :: Ag1 = -189.757575D-9, Ag2 = 210.252525D-9
 double precision, parameter :: groove_depth = 100.0D-9, slit_depth = 400.0D-9
 double precision, parameter :: groove_width = 100.0D-9, slit_width = 100.0D-9
 
@@ -315,6 +316,8 @@ enddo
 
 mwT = floor((ywT + (yM-y0)/2)/dx/N_loc) !floor(j_glob/N_loc)
 jwT = 1 + (real((ywT + (yM-y0)/2)/dx/N_loc) - floor((ywT + (yM-y0)/2)/dx/N_loc))*N_loc !remainder(j_glob/N_loc)*N_loc
+mj0 = mwT
+j0 = jwT - 1
 
 !-----------------------------------
 !----------- Grid Return -----------
