@@ -47,7 +47,7 @@ integer :: mj0, j0
 !integer, parameter :: mj0=1*2,j0=11  !<--- - 590nm
 integer, parameter :: mj1=28*2+1,j1=11!<--- + 510nm
 
-integer, parameter :: ms=29*2+1,js=1
+integer, parameter :: ms=29*2+1,js=11
 
 !
 !~~~ Gaussian Source ~~~!
@@ -317,7 +317,7 @@ enddo
 mwT = floor((ywT + (yM-y0)/2)/dx/N_loc) !floor(j_glob/N_loc)
 jwT = 1 + (real((ywT + (yM-y0)/2)/dx/N_loc) - floor((ywT + (yM-y0)/2)/dx/N_loc))*N_loc !remainder(j_glob/N_loc)*N_loc
 mj0 = mwT
-j0 = jwT - 1
+j0 = jwT - 2
 
 !-----------------------------------
 !----------- Grid Return -----------
