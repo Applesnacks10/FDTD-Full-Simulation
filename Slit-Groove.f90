@@ -219,7 +219,7 @@ double precision Hz_send_inc,Hz_get_inc
 !---------------------------
 
 do nn=1,N_w
- omega_P(nn)=omega_min+(omega_max-omega_min)*(nn-1)/(N_w-1)
+ omega_P(nn)=omega
 enddo
 
 pulse=0.0
