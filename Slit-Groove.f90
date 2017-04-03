@@ -60,13 +60,14 @@ integer, parameter :: ms=29*2+1,js=11
 !double precision tmp1,tmp2,omega_P(N_w),SN(N_w,2)
 
 
-~~~ Monotone Source ~~~!
+!~~~ Monotone Source ~~~!
 
 
 integer, parameter :: N_w = 1
 double precision, parameter :: wavelength = 852.0D-9 
 double precision, parameter :: omega = 2*pi*c/wavelength
 double precision, parameter :: omega_min = omega, omega_max = omega
+double precision, parameter :: E0 = 1.0
 double precision pulse(Nt)
 double precision tmp1,tmp2,omega_P(N_w),SN(N_w,2)
 
